@@ -1,6 +1,8 @@
 # snapshot_builder.py
 # Creates portable snapshot.
 # Example:
+# Output:
+# snapshots/process_1821_snapshot.tar.gz
 
 import tarfile
 
