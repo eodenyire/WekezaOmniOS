@@ -1,1 +1,5 @@
-
+# criu_config.yaml
+criu_path: /usr/sbin/criu
+use_shell_job: true
+tcp_established: true
+ext_unix_sk: true
