@@ -1,1 +1,2 @@
-
+[2026-03-07 22:10:01] [INFO] [CAPTURE] [PID:1821] Initiating memory dump.
+[2026-03-07 22:10:05] [INFO] [CAPTURE] [PID:1821] State successfully written to snapshot/process_1821/memory.dump
