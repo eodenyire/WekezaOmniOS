@@ -1,5 +1,3 @@
-# 📄 `teleportation_architecture.md`
-
 ### 🏗️ Deep-Dive: Engine Internals
 
 This document details the low-level execution flow and the handoff mechanisms between modules.
