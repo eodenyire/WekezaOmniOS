@@ -1,1 +1,12 @@
-
+{
+    "snapshot_id": "UAT-2026-03-07-1821-X",
+    "process_id": 1821,
+    "process_name": "wekeza-core-engine",
+    "os": "ubuntu-24.04-lts",
+    "architecture": "x86_64",
+    "kernel_version": "6.8.0-101-generic",
+    "created_at": "2026-03-07T18:20:00Z",
+    "author": "Emmanuel Odenyire Anyira",
+    "engine_version": "v1.0.0-phase1",
+    "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
