@@ -1,16 +1,21 @@
-# WekezaOmniOS Configurations
+# WekezaOmniOS Demo Applications
 
-This folder contains all configuration files used by the Universal Application Teleportation (UAT) engine.
+This folder contains demo applications used to test the Universal Application Teleportation (UAT) engine.
 
-## Files
+## Contents
 
-- `system.yaml` — General system settings
-- `criu_config.yaml` — CRIU-specific configuration
-- `teleportation.yaml` — Teleportation engine settings
+- `demo_app.py` — a simple long-running console process
+- `demo_server.py` — simulates a background service for teleportation testing
 
 ## Purpose
 
-- Provide a **single source of truth** for all engine parameters
-- Support **phase 1 local teleportation**
-- Prepare for **phase 2 distributed teleportation**
-- Allow easy overrides without changing code
+- Provide safe, reproducible workloads
+- Verify process capture, snapshot, and restore functionality
+- Demonstrate teleportation engine features without production apps
+
+## Usage
+
+### Running demo_app.py
+
+```bash
+python demo_app.py
