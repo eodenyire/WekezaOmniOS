@@ -1,19 +1,19 @@
-7️⃣ Tests
-tests/
+# WekezaOmniOS Teleportation Tests
 
-test_capture.py
-test_snapshot.py
-test_restore.py
+This folder contains automated tests for the Phase 1 teleportation engine.
 
-Use pytest.
-Rule 8 — Everything Must Be Testable
+## Rules
 
-Create automated tests.
+- Rule 8 — Everything must be testable
+- Use `pytest` for unit and integration tests
+- Tests must cover:
+  - State capture (`state-capture/`)
+  - Snapshot creation (`snapshot-engine/`)
+  - Process restore (`state-reconstruction/`)
 
-tests/
+## Example Usage
 
-test_capture.py
-test_snapshot.py
-test_restore.py
+Run all tests:
 
-Testing ensures the teleportation system never corrupts state.
+```bash
+pytest -v
