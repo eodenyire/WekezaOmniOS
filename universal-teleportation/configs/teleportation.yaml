@@ -1,5 +1,15 @@
-# teleportation.yaml
-max_snapshot_size_mb: 500
-default_restore_mode: pause_resume
+# WekezaOmniOS: Teleportation Business Logic
+# Defines the 'Rules of the Jump'
+
+# Resource Constraints
+max_snapshot_size_mb: 500  # Safety limit for Phase 1
+compression_level: 6       # Balance between speed and storage size
+
+# Operational Defaults
+default_restore_mode: "pause_resume" # Options: pause_resume, live_migration
+default_engine: "criu"
 enable_logging: true
-default_engine: criu
+
+# Security (Phase 1 Mock)
+verify_checksum: true
+encrypt_snapshots: false
