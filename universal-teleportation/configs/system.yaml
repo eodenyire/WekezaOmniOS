@@ -1,1 +1,5 @@
-
+# system.yaml
+snapshot_directory: ./snapshots
+log_directory: ./logs
+temp_directory: ./temp
+default_node: local-node
