@@ -1,7 +1,3 @@
-## 📁 Folder: `scripts/`
-
-### 📄 `README.md`
-
 # 🛠️ WekezaOmniOS: Utility Scripts
 
 This folder contains the automation layer for Phase 1 of the Universal Application Teleportation (UAT) engine. These scripts are designed to standardize the environment so that every teleportation test starts from a "known good" state.
