@@ -1,5 +1,10 @@
-# system.yaml
-snapshot_directory: ./snapshots
-log_directory: ./logs
-temp_directory: ./temp
-default_node: local-node
+# WekezaOmniOS: System Paths & Node Identity
+# Used by: State Capture, Snapshot Engine, and CLI
+
+snapshot_directory: "./snapshots"
+log_directory: "./logs"
+temp_directory: "./temp"
+
+# Phase 1: Local Simulation Identity
+default_node: "nairobi-local-01"
+environment: "development"
