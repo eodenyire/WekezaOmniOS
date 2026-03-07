@@ -1,7 +1,64 @@
-# capture_manager.py
-# Main logic controlling checkpoint.
-# Example:
+"""
+WekezaOmniOS Capture Manager
+Main orchestrator for freezing and inspecting running processes.
+"""
+
+import os
+from .process_inspector import get_process_info
+from .criu_wrapper import checkpoint_process
+from .utils import ensure_dir
+
 class CaptureManager:
+    def __init__(self, snapshot_dir="./snapshot"):
+        """
+        Initializes the Capture Manager with a base storage directory.
+        
+        Args:
+            snapshot_dir (str): The root directory where process dumps are stored.
+        """
+        self.snapshot_dir = snapshot_dir
+        ensure_dir(self.snapshot_dir)
 
     def capture_process(self, pid):
-        print(f"Capturing process {pid}")
+        """
+        Orchestrates the full capture workflow for a specific PID.
+        1. Inspects the process for metadata.
+        2. Creates a dedicated snapshot subdirectory.
+        3. Triggers the CRIU checkpoint engine.
+        
+        Args:
+            pid (int): The Process ID of the application to teleport.
+        
+        Returns:
+            dict: Metadata about the captured process.
+        """
+        print(f"[CaptureManager] 🧊 Initiating capture for PID {pid}...")
+
+        # 1. Gather metadata (CPU, Memory, Name)
+        info = get_process_info(pid)
+        
+        # 2. Define and create the specific capture path
+        process_snapshot_dir = os.path.join(self.snapshot_dir, f"process_{pid}")
+        ensure_dir(process_snapshot_dir)
+
+        # 3. Perform the actual state dump
+        try:
+            checkpoint_process(pid, process_snapshot_dir)
+            print(f"[CaptureManager] ✅ Process {pid} captured successfully.")
+            print(f"[CaptureManager] Snapshot saved to: {process_snapshot_dir}")
+        except Exception as e:
+            print(f"[CaptureManager] ❌ Failed to capture process {pid}: {e}")
+            raise
+
+        return info
+
+# Example usage for Phase 1 testing
+if __name__ == "__main__":
+    # Simulate a capture of a running process (adjust PID as needed)
+    manager = CaptureManager()
+    # In a real scenario, you'd pull this PID from your 'demo_app.pid' file
+    target_pid = 1821 
+    try:
+        manager.capture_process(target_pid)
+    except Exception:
+        print("[CaptureManager] Phase 1 Mock: Ensure CRIU is installed for real dumps.")
