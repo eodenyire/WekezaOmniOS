@@ -1,3 +1,8 @@
+"""
+WekezaOmniOS API Models
+Defines the request and response schemas for UAT orchestration.
+"""
+
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -5,14 +10,15 @@ from typing import Optional
 
 class TeleportRequest(BaseModel):
     """Schema for high-level environment-to-environment migration."""
-    process_id: int
-    source_env: str
-    target_env: str
+    process_id: int = Field(..., example=1921)
+    source_env: str = Field(..., example="nairobi-node-01")
+    target_env: str = Field(..., example="cloud-node-us-east")
 
 class TeleportResponse(BaseModel):
     """Standardized response for orchestration commands."""
     status: str
     message: str
+    tracking_id: Optional[str] = None
 
 # --- Atomic Operation Models ---
 
@@ -23,7 +29,7 @@ class CaptureRequest(BaseModel):
 class SnapshotRequest(BaseModel):
     """Request schema for turning captured state into a portable file."""
     pid: int
-    snapshot_name: Optional[str] = Field(None, description="Optional name for the generated snapshot file.")
+    snapshot_name: Optional[str] = Field(None, description="Optional name for the generated snapshot.")
 
 class RestoreRequest(BaseModel):
     """Request schema for rehydrating a process on a new host."""
@@ -35,3 +41,4 @@ class TeleportStatus(BaseModel):
     """Schema for engine health and migration progress updates."""
     status: str
     message: Optional[str] = None
+    engine_load: float = 0.0
