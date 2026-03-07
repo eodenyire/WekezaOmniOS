@@ -1,3 +1,5 @@
+# 📄 logger.py
+# This is the "pen" that writes to your "Black Box." Instead of using print(), all modules will import this to ensure logs are time-stamped and categorized.
 """
 WekezaOmniOS Logging Utility
 Standardizes the audit trail for all teleportation events.
