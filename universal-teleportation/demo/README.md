@@ -1,17 +1,16 @@
-Rule 7 — Always Build a Demo Environment
+# WekezaOmniOS Configurations
 
-Serious projects include demos.
+This folder contains all configuration files used by the Universal Application Teleportation (UAT) engine.
 
-Add:
+## Files
 
-demo/
+- `system.yaml` — General system settings
+- `criu_config.yaml` — CRIU-specific configuration
+- `teleportation.yaml` — Teleportation engine settings
 
-demo_app.py
-demo_server.py
+## Purpose
 
-Example demo app:
-
-while True:
-    print("Running Wekeza Teleportable Process")
-
-This becomes the test workload.
+- Provide a **single source of truth** for all engine parameters
+- Support **phase 1 local teleportation**
+- Prepare for **phase 2 distributed teleportation**
+- Allow easy overrides without changing code
