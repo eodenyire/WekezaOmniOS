@@ -1,5 +1,4 @@
 ---
-
 # 🧪 WekezaOmniOS Teleportation Tests
 
 This folder contains the automated testing suite for Phase 1 of the **Universal Application Teleportation (UAT)** engine. Following **Rule 8: Everything Must Be Testable**, this suite provides the "safety net" required to ensure process integrity during capture, transfer, and restoration.
