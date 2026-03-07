@@ -1,1 +1,5 @@
-
+# teleportation.yaml
+max_snapshot_size_mb: 500
+default_restore_mode: pause_resume
+enable_logging: true
+default_engine: criu
