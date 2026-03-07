@@ -1,11 +1,16 @@
-6️⃣ Configs
-configs/
+# WekezaOmniOS Configurations
 
-system.yaml
-criu_config.yaml
-teleportation.yaml
+This folder contains all configuration files used by the Universal Application Teleportation (UAT) engine.
 
-Example:
+## Files
 
-snapshot_directory: ./snapshots
-log_directory: ./logs
+- `system.yaml` — General system settings
+- `criu_config.yaml` — CRIU-specific configuration
+- `teleportation.yaml` — Teleportation engine settings
+
+## Purpose
+
+- Provide a **single source of truth** for all engine parameters
+- Support **phase 1 local teleportation**
+- Prepare for **phase 2 distributed teleportation**
+- Allow easy overrides without changing code
