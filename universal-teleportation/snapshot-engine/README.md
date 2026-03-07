@@ -1,48 +1,56 @@
-2️⃣ snapshot-engine
+# 📦 WekezaOmniOS: Snapshot Engine
 
-Packages process state.
+The **Snapshot Engine** is the industrial packaging arm of the Universal Application Teleportation (UAT) platform. It is responsible for converting raw system states into highly portable, compressed, and self-describing archives.
 
-process_snapshot.bin
-memory_pages.bin
-environment.json
-dependencies.json
+### 🎯 Purpose
 
-This becomes a portable execution snapshot.
+* **Portability:** Ensures snapshots can be moved between directories, servers, or cloud nodes without losing integrity.
+* **Standardization:** Defines the uniform structure for process state across different operating systems.
+* **Efficiency:** Uses high-compression formats (GZIP) to minimize bandwidth during network-based teleportation.
 
-2️⃣ snapshot-engine
+---
 
-Packages captured state.
+## 📁 Module Breakdown
 
-snapshot-engine/
+| File | Responsibility |
+| --- | --- |
+| **`snapshot_builder.py`** | The "Packer." Compresses the captured directory into a `.tar.gz` archive. |
+| **`snapshot_metadata.py`** | The "Registrar." Generates and manages the `metadata.json` for every snapshot. |
+| **`snapshot_reader.py`** | The "Inspector." Validates the archive and reads metadata before restoration. |
 
-snapshot_builder.py
-snapshot_reader.py
-snapshot_metadata.py
-snapshot_builder.py
+---
 
-Creates portable snapshot.
+## 🏗️ Snapshot Format (Phase 1)
 
-Example:
+Every snapshot produced by this engine follows a strict structural contract to ensure the **Restore Manager** can reanimate it:
 
-import tarfile
+* **`memory.dump`** — The raw binary representation of the process memory.
+* **`filesystem.tar`** — An archive of any local files the process was accessing.
+* **`environment.json`** — A snapshot of the process's environment variables.
+* **`metadata.json`** — The "Passport" (PID, Timestamp, OS, Architecture).
 
-def build_snapshot(snapshot_dir, output_file):
+---
 
-    with tarfile.open(output_file, "w:gz") as tar:
-        tar.add(snapshot_dir)
+## 🚀 Phase 1 Workflow
 
-Output:
+1. **Capture Handoff:** The `state-capture` module dumps raw data into a temporary directory.
+2. **Manifest Creation:** `snapshot_metadata.py` generates the identifying JSON.
+3. **Encapsulation:** `snapshot_builder.py` zips the raw data and manifest into a single `.tar.gz`.
+4. **Verification:** `snapshot_reader.py` performs a "smoke test" to ensure the archive isn't corrupt.
 
-snapshots/process_1821_snapshot.tar.gz
-snapshot_metadata.py
+---
 
-Stores metadata.
+## 🔗 Integration Plan
 
-Example:
+The Snapshot Engine acts as the critical bridge in the teleportation pipeline:
 
-{
-  "process_id": 1821,
-  "timestamp": "2026-03-07T18:20:00",
-  "os": "ubuntu",
-  "memory_size": "120MB"
-}
+> **State Capture** ⮕ **Snapshot Engine** ⮕ **Transfer Layer** ⮕ **State Reconstruction**
+
+* **Upstream:** Triggered by the CLI or UI once a process is successfully frozen.
+* **Downstream:** Feeds the `transfer-layer` (Phase 2) or directly into `state-reconstruction` (Phase 1).
+
+---
+
+### ✅ Snapshot Engine: MISSION COMPLETE
+
+With the storage logic, reader, and builder finalized, we now have a "Portable Soul" for our processes.
