@@ -1,5 +1,10 @@
-# criu_config.yaml
-criu_path: /usr/sbin/criu
-use_shell_job: true
-tcp_established: true
-ext_unix_sk: true
+# WekezaOmniOS: CRIU Engine Optimization
+# These flags ensure high-fidelity capture of TCP and Unix Sockets.
+
+criu_path: "/usr/sbin/criu"
+
+# Feature Flags
+use_shell_job: true      # Allows capturing apps started from a shell
+tcp_established: true    # Keep database/API connections alive across the jump
+ext_unix_sk: true        # Support for inter-process communication sockets
+file_locks: true         # Ensure file integrity during the freeze
