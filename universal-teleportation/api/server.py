@@ -1,29 +1,34 @@
+"""
+WekezaOmniOS API Server
+Main entry point for the Teleportation Control Plane.
+"""
+
 import uvicorn
 from fastapi import FastAPI
 from routes import router
 
-# Initialize the FastAPI app with comprehensive metadata
 app = FastAPI(
     title="WekezaOmniOS Universal Teleportation API",
-    description="REST interface for controlling the Universal Application Teleportation (UAT) engine.",
-    version="0.1"
+    description="The programmatic control plane for Wekeza's Universal Application Teleportation (UAT) engine.",
+    version="0.1.0",
+    contact={
+        "name": "Emmanuel Odenyire Anyira",
+        "url": "https://github.com/WekezaOmniOS",
+    }
 )
 
-# Include the modular routes
+# Modular route inclusion
 app.include_router(router)
 
 @app.get("/", tags=["Health Check"])
 def root():
-    """
-    Root endpoint to verify the API status and version.
-    """
+    """Verify API availability and versioning."""
     return {
-        "message": "WekezaOmniOS Universal Teleportation API",
-        "status": "running",
-        "version": "0.1"
+        "service": "WekezaOmniOS UAT API",
+        "status": "active",
+        "phase": "1.0 - Bootstrap"
     }
 
-# Entry point for direct script execution
 if __name__ == "__main__":
-    # Host 0.0.0.0 allows access from external sources/containers
+    # Standard port 8000 with auto-reload for development
     uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
