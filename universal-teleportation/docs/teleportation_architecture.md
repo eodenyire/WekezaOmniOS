@@ -1,63 +1,66 @@
 # 📄 `teleportation_architecture.md`
 
-* Detailed breakdown for **engine internals**:
+### 🏗️ Deep-Dive: Engine Internals
 
-```md
-# Teleportation Engine Architecture
+This document details the low-level execution flow and the handoff mechanisms between modules.
 
-## Modules
+## ⚙️ Core Engine Modules
 
-- `state-capture/`
-- `snapshot-engine/`
-- `state-reconstruction/`
-- `cluster/`
-- `cli/`
-- `api/`
+| Module | Internal Function | Tech Stack |
+| --- | --- | --- |
+| **`state-capture/`** | Intersects process memory and registers. | `CRIU`, `ptrace`, `psutil` |
+| **`snapshot-engine/`** | Serializes binary dumps and environment state. | `tarfile`, `json`, `hashlib` |
+| **`state-reconstruction/`** | Rehydrates the process in a new address space. | `CRIU restore`, `os.execve` |
+| **`cluster/`** | Discovers and validates target node readiness. | `FastAPI`, `ZeroMQ` |
 
-## Flow
+## 🔄 The Teleportation Lifecycle (Internal Flow)
 
-```
+1. **Request Ingestion:** The `teleportation-api` receives a PID and a Target Node ID.
+2. **Pre-Flight Check:** `cluster_manager` pings the target node to ensure the **Runtime Adapter** (e.g., Linux vs. Windows) matches the `metadata.json`.
+3. **The Freeze (Capture):** `capture_manager` calls the `criu_wrapper` to dump memory pages to the `temp/` workspace.
+4. **The Package (Snapshot):** `snapshot_builder` compresses the memory dump and attaches the `env.json` and `metadata.json`.
+5. **The Jump (Transfer):** (Phase 2) The `transfer-layer` moves the `.tar.gz` to the target node.
+6. **The Thaw (Reconstruct):** `restore_manager` extracts the cargo and re-executes the process image.
+7. **Handshake:** The monitoring module confirms the process is `RUNNING` on the new node and closes the log entry.
 
-1. CLI/API request → state-capture.capture_manager()
-2. snapshot-engine.snapshot_builder()
-3. state-reconstruction.restore_manager()
-4. Logging to ./logs
+## 🚀 Future Integration Roadmap
 
-```
+* **Distributed Engines:** Support for multiple capture nodes across different geographic locations.
+* **Kernel-Level Hooks:** Moving from userspace `CRIU` to dedicated kernel modules for sub-millisecond teleportation.
 
-## Future Integration
+---
 
-- Remote nodes
-- Cloud teleportation
-- Multiple snapshot engines
+# 📂 Folder: `logs/`
+
+We are now moving to the **Logs** folder. In systems engineering, **Rule 5: Everything Must Be Observable** is non-negotiable. If a teleportation fails at a 99% progress bar, the logs are the only way we find out why.
+
+### 📄 `README.md` (Logs & Conventions)
+
+```markdown
+# 📜 WekezaOmniOS: Logging & Observability
+
+This folder contains the audit trail for every action performed by the UAT engine.
+
+## ⚖️ Rule 5 — Everything Must Be Observable
+Systems software must produce logs. In Phase 1, we establish a structured logging convention that allows for easy debugging and future integration with ELK or Prometheus stacks.
+
+## 📁 Log Structure
+- `teleport.log`: The master audit trail for the full lifecycle.
+- `capture.log`: Detailed output from the checkpointing process.
+- `restore.log`: Detailed output from the reanimation phase.
+
+## 📝 Logging Conventions
+Every entry must include:
+1. **Timestamp:** `[YYYY-MM-DD HH:MM:SS]`
+2. **Component:** `[CAPTURE]`, `[SNAPSHOT]`, `[RESTORE]`, etc.
+3. **Identifier:** The PID of the target process.
+4. **Status:** `[INFO]`, `[WARNING]`, or `[ERROR]`.
+
+
 ```
 
 ---
 
-# 📂 Final `docs/` Folder Structure
+### ✅ Next Step: Logging Implementation
 
-```text
-docs/
-    README.md
-    architecture.md
-    phase1_design.md
-    snapshot_format.md
-    teleportation-overview.md
-    teleportation_architecture.md
-```
-
----
-
-✅ **Next Step:**
-
-After docs, the next critical folder is:
-
-```text
-logs/
-```
-
-This folder **collects all logs from capture, snapshot, and restore actions**, which is vital for **debugging and verifying teleportation**.
-
-We can design `logs/README.md` and the log conventions next.
-
-Do you want me to do that?
+The architecture is now fully documented. We have the "Blueprint" and the "Flight Recorder" structure ready.
