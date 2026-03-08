@@ -1,4 +1,9 @@
-from node_registry import NodeRegistry
+"""
+WekezaOmniOS Node Manager
+Delegates node operations to the NodeRegistry.
+"""
+from .node_registry import NodeRegistry
+
 
 class NodeManager:
 

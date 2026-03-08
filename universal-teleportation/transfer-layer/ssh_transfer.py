@@ -1,39 +1,34 @@
 """
-WekezaOmniOS SSH Transfer Module (Placeholder)
-Prepares the engine for Phase 2: Remote Node Teleportation.
+WekezaOmniOS SSH Transfer Module
+Phase 2: Sends snapshots to remote nodes via SSH/SCP.
 """
+import subprocess
+
 
 def copy_snapshot_ssh(snapshot_path, remote_host, remote_path):
     """
-    Simulates sending a snapshot to a remote node via SSH/SCP.
-    
-    In Phase 2, this will handle:
-    1. Authentication via SSH keys.
-    2. Secure tunneling.
-    3. Remote directory synchronization.
+    Send a snapshot to a remote node using SCP.
 
     Args:
-        snapshot_path (str): Local path to the snapshot directory.
+        snapshot_path (str): Local path to the snapshot directory or archive.
         remote_host (str): IP address or hostname of the target environment.
         remote_path (str): Destination path on the remote machine.
+
+    Returns:
+        bool: True on success, False otherwise.
     """
-    # Mock behavior for Phase 1 testing
-    print(f"\n[SSH Transfer - SIMULATION]")
-    print(f"  📦 Source: {snapshot_path}")
-    print(f"  🌐 Target Host: {remote_host}")
-    print(f"  📂 Target Path: {remote_path}")
-    print(f"  🚀 Status: Ready for Phase 2 Implementation (Paramiko/SCP).")
+    print(f"\n[SSH Transfer] {snapshot_path} -> {remote_host}:{remote_path}")
+    result = subprocess.run(
+        ["scp", "-r", snapshot_path, f"{remote_host}:{remote_path}"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        print("[SSH Transfer] Transfer successful.")
+        return True
+    print(f"[SSH Transfer] Transfer failed: {result.stderr.strip()}")
+    return False
 
-    # TODO: Phase 2 - Implement with paramiko or subprocess + scp
-    return True
 
-
-
-import subprocess
-
-def send_via_ssh(snapshot_path, host, path):
-    subprocess.run([
-        "scp",
-        snapshot_path,
-        f"{host}:{path}"
-    ])
+# Alias for backwards compatibility
+send_via_ssh = copy_snapshot_ssh

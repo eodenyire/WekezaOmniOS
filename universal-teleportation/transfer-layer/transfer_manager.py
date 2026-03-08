@@ -4,7 +4,7 @@ Coordinates the movement of process snapshots between local and remote nodes.
 """
 
 import os
-from local_transfer import copy_snapshot_local
+from .local_transfer import copy_snapshot_local
 
 class TransferManager:
     def __init__(self, snapshot_dir="./snapshot"):
