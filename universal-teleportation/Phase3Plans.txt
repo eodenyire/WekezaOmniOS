@@ -1,3 +1,180 @@
+Excellent — moving to Phase 3 is the correct step after Phase 2. Phase 3 is where Universal Teleportation becomes container-aware, meaning the system can teleport Docker or container runtime workloads, not just generic processes or snapshots.
+This is a major milestone because modern infrastructure (Kubernetes, cloud platforms, CI/CD systems) runs primarily on containers.
+________________________________________
+🚀 Phase 3 — Container Runtime Integration
+🎯 Goal
+Enable WekezaOmniOS to capture, checkpoint, and restore containers using real container runtimes.
+Instead of teleporting a simple process:
+Python App
+you teleport an entire container:
+Docker Container
+   ├── Application
+   ├── Dependencies
+   ├── Filesystem
+   ├── Network
+   └── Runtime State
+________________________________________
+🧠 Why Containers First?
+Containers already support checkpoint/restore, which makes them perfect for teleportation.
+Important technologies:
+•	Docker Checkpoint
+•	CRIU (Checkpoint Restore in Userspace)
+•	containerd
+•	Podman
+Teleportation flow becomes:
+Running Container
+       ↓
+Checkpoint container
+       ↓
+Create snapshot
+       ↓
+Transfer snapshot
+       ↓
+Restore container
+       ↓
+Container resumes running
+________________________________________
+🏗️ Phase 3 Architecture
+Application Container
+        ↓
+Container Adapter
+        ↓
+Checkpoint Engine (CRIU)
+        ↓
+Snapshot Engine
+        ↓
+Transfer Layer
+        ↓
+Remote Node
+        ↓
+Container Restore
+New layer:
+runtime-adapters/
+    container runtimes
+________________________________________
+📂 New Files for Phase 3
+Inside your existing folder:
+runtime-adapters/
+Add:
+runtime-adapters/
+    docker_adapter.py
+    containerd_adapter.py
+    podman_adapter.py
+    container_checkpoint.py
+    container_restore.py
+Also add tests:
+tests/
+    test_docker_adapter.py
+    test_container_checkpoint.py
+And documentation:
+docs/
+    container_teleportation.md
+________________________________________
+🐳 docker_adapter.py
+This adapter connects teleportation with Docker.
+import subprocess
+
+class DockerAdapter:
+    """
+    Adapter for interacting with Docker containers.
+    """
+
+    def list_containers(self):
+        result = subprocess.run(
+            ["docker", "ps", "--format", "{{.ID}}"],
+            capture_output=True,
+            text=True
+        )
+
+        return result.stdout.strip().split("\n")
+
+    def inspect_container(self, container_id):
+        result = subprocess.run(
+            ["docker", "inspect", container_id],
+            capture_output=True,
+            text=True
+        )
+
+        return result.stdout
+________________________________________
+📦 container_checkpoint.py
+Creates a checkpoint using Docker + CRIU.
+import subprocess
+
+def checkpoint_container(container_id, checkpoint_name="uat-checkpoint"):
+    """
+    Create container checkpoint.
+    """
+
+    subprocess.run([
+        "docker",
+        "checkpoint",
+        "create",
+        container_id,
+        checkpoint_name
+    ])
+
+    return checkpoint_name
+Checkpoint output:
+/var/lib/docker/containers/<id>/checkpoints/
+________________________________________
+🔄 container_restore.py
+Restores a container from checkpoint.
+import subprocess
+
+def restore_container(container_id, checkpoint_name):
+    """
+    Restore container from checkpoint.
+    """
+
+    subprocess.run([
+        "docker",
+        "start",
+        "--checkpoint",
+        checkpoint_name,
+        container_id
+    ])
+________________________________________
+🐙 containerd_adapter.py
+For Kubernetes-style container runtimes.
+import subprocess
+
+class ContainerdAdapter:
+
+    def list_containers(self):
+        result = subprocess.run(
+            ["ctr", "containers", "list"],
+            capture_output=True,
+            text=True
+        )
+
+        return result.stdout
+________________________________________
+🧪 test_docker_adapter.py
+Inside /tests/.
+from runtime_adapters.docker_adapter import DockerAdapter
+
+def test_list_containers():
+
+    adapter = DockerAdapter()
+    containers = adapter.list_containers()
+
+    assert isinstance(containers, list)
+________________________________________
+🧪 test_container_checkpoint.py
+from runtime_adapters.container_checkpoint import checkpoint_container
+
+def test_checkpoint():
+
+    container_id = "example"
+
+    checkpoint = checkpoint_container(container_id)
+
+    assert checkpoint == "uat-checkpoint"
+________________________________________
+📄 docs/container_teleportation.md
+Document the feature.
+Example structure:
 # Container Teleportation
 
 Phase 3 enables WekezaOmniOS to teleport container workloads.
@@ -14,3 +191,67 @@ Process:
 2. Snapshot creation
 3. Snapshot transfer
 4. Remote restore
+________________________________________
+🌐 Updated Teleportation Flow
+Now teleportation becomes:
+Container
+   ↓
+Docker Adapter
+   ↓
+Checkpoint Container
+   ↓
+Snapshot Engine
+   ↓
+Transfer Layer
+   ↓
+Remote Node
+   ↓
+Restore Container
+________________________________________
+🧪 Demo Scenario
+Example developer workflow:
+docker run my-api
+Then:
+POST /teleport/container
+{
+  "container_id": "api-container",
+  "target_node": "node-2"
+}
+System performs:
+checkpoint
+transfer
+restore
+resume
+Container keeps running on another machine.
+________________________________________
+⭐ What Phase 3 Achieves
+After Phase 3, WekezaOmniOS can:
+✔ Teleport containerized applications
+✔ Integrate with Docker
+✔ Integrate with containerd
+✔ Use CRIU checkpointing
+✔ Restore containers remotely
+This is now similar to Kubernetes container migration.
+________________________________________
+🔮 Phase 4 (Next Major Leap)
+Phase 4 introduces Distributed Snapshot Storage.
+Instead of copying snapshots directly between nodes:
+Node A → Node B
+you use:
+Node A
+   ↓
+Snapshot Storage (S3 / distributed store)
+   ↓
+Node B
+This enables:
+•	cloud teleportation
+•	snapshot reuse
+•	faster transfers
+•	deduplication
+________________________________________
+✅ If you'd like, the next extremely important step is:
+Designing the container teleportation controller that connects:
+API → Docker Adapter → Checkpoint → Transfer → Restore
+This is the core engine that will make Phase 3 actually work.
+
+
