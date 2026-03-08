@@ -11,3 +11,17 @@ nodes:
   node-3:
     host: 192.168.1.30
     role: testing
+
+nodes:
+
+  node-1:
+    host: 192.168.1.10
+    role: developer
+
+  node-2:
+    host: 192.168.1.20
+    role: cloud
+
+  node-3:
+    host: 192.168.1.30
+    role: testing
