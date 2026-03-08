@@ -1,0 +1,9 @@
+security:
+
+  encryption: true
+
+  authentication: true
+
+  authorization: true
+
+  certificate_rotation_days: 30
