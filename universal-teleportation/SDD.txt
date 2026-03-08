@@ -1,0 +1,98 @@
+3️⃣ System Design Document (SDD) – Universal Application Teleportation
+Project Name: WekezaOmniOS – UAT
+Version: 1.0
+Date: 2026-03-08
+________________________________________
+1. System Overview
+The Teleportation Platform enables:
+•	Live migration of running applications.
+•	Cross-node and cross-OS operation.
+•	Real-time monitoring and orchestration.
+System layers:
++----------------------+
+| UI Controls          |
++----------------------+
+| Teleportation API    |
++----------------------+
+| Orchestrator         |
++----------------------+
+| Transfer Layer       |
++----------------------+
+| Snapshot Engine      |
++----------------------+
+| State Capture Engine |
++----------------------+
+| Runtime Adapters     |
++----------------------+
+| Destination Node     |
++----------------------+
+________________________________________
+2. Module Design
+2.1 State Capture Engine
+•	Captures memory pages, CPU registers, threads, file descriptors, network state.
+•	Interfaces: capture_memory(), capture_threads(), capture_cpu_state().
+•	Technologies: CRIU, ptrace, /proc filesystem.
+________________________________________
+2.2 Snapshot Engine
+•	Packages captured state with metadata.
+•	Snapshot components: process_snapshot.bin, memory_pages.bin, environment.json, dependencies.json.
+•	Features: checksum, compression, portable structure.
+________________________________________
+2.3 Transfer Layer
+•	Moves snapshots securely between nodes.
+•	Protocols: TCP, gRPC, SSH, WebRTC.
+•	Features: chunked transfer, parallel transfer, retries.
+________________________________________
+2.4 State Reconstruction Engine
+•	Rebuilds process state on destination node.
+•	Functions: restore_memory(), restore_threads(), restore_file_descriptors(), resume_execution().
+•	Validation: snapshot integrity, reconstruction confirmation.
+________________________________________
+2.5 Runtime Adapters
+•	Handles OS-specific differences: Linux, Windows, Android, containerized environments.
+•	Interfaces: translate_snapshot_for_target(), map_environment_variables().
+________________________________________
+2.6 Teleportation Orchestrator
+•	Coordinates entire teleportation workflow.
+•	Steps: validate nodes → capture → package → transfer → reconstruct → confirm.
+•	Provides telemetry and logging hooks.
+________________________________________
+2.7 Teleportation API
+•	REST API endpoints for programmatic access.
+•	Supports: /teleport, /teleport/status, /teleport/cancel.
+•	Security: Node authentication, payload encryption.
+________________________________________
+2.8 UI Controls
+•	Right-click teleport interface.
+•	Supports selecting target environment and teleport mode.
+________________________________________
+3. Data Flow
+[UI/API] → Orchestrator → State Capture → Snapshot Engine
+        → Transfer Layer → Destination Node
+        → State Reconstruction → Confirmation → Telemetry
+________________________________________
+4. Teleport Modes
+•	Live Migration: Process continues during transfer.
+•	Pause & Resume: Process paused, snapshot transferred, then resumed.
+•	Clone Execution: Original continues, snapshot launched elsewhere.
+________________________________________
+5. Security Design
+•	AES-256 snapshot encryption
+•	TLS transport
+•	Node identity verification
+•	Snapshot integrity checksums
+________________________________________
+6. Monitoring & Telemetry
+Metrics captured:
+•	Teleport success/failure
+•	Snapshot size
+•	Transfer latency
+•	Reconstruction time
+________________________________________
+7. Scaling Considerations
+•	Multi-node clusters
+•	Cloud-native deployments
+•	Delta snapshots to reduce bandwidth
+•	Parallelized transfer pipelines
+________________________________________
+
