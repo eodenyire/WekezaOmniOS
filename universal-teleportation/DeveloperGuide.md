@@ -1,5 +1,5 @@
-# **WekezaOmniOS Universal Teleportation — </br>
-# Developer Guide**
+# WekezaOmniOS Universal Teleportation
+# Developer Guide
 
 | Module / Folder           | File                            | Phase | Description                                                                 |
 | ------------------------- | ------------------------------- | ----- | --------------------------------------------------------------------------- |
