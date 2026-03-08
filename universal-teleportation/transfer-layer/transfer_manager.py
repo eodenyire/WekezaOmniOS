@@ -1,6 +1,7 @@
 """Transfer manager for local and cross-node snapshot movement."""
 
 import os
+from .local_transfer import copy_snapshot_local
 import sys
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
