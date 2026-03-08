@@ -1,1 +1,9 @@
+storage:
 
+  backend: local
+
+  local:
+    directory: snapshot-storage/data
+
+  s3:
+    bucket: uat-snapshots
