@@ -56,7 +56,7 @@ class TeleportController:
 		self.capture_manager = CaptureManager(snapshot_dir=os.path.join(BASE_DIR, "snapshots"))
 		self.transfer_manager = TransferManager(snapshot_dir=os.path.join(BASE_DIR, "snapshots"))
 		self.node_controller = NodeController()
-		self.telemetry = NodeTelemetry(telemetry_file=os.path.join(BASE_DIR, "logs", "node_telemetry.jsonl"))
+		self.telemetry = NodeTelemetry("teleport-controller")
 		self.container_adapter = ContainerAdapter()
 		self.container_checkpoint = ContainerCheckpointEngine(snapshot_dir=os.path.join(BASE_DIR, "snapshots"))
 		self.container_restore = ContainerRestoreEngine(snapshot_dir=os.path.join(BASE_DIR, "snapshots"))

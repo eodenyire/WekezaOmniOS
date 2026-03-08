@@ -19,7 +19,10 @@ class StorageIndex:
 
     def get_snapshot(self, snapshot_id):
         """Look up where a process state is stored."""
-        return self.index.get(snapshot_id)
+        entry = self.index.get(snapshot_id)
+        if entry is None:
+            return None
+        return entry["location"]
 
     def list_snapshots(self):
         """List all tracked snapshots in the system."""

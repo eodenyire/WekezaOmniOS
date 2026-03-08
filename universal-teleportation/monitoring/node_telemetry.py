@@ -1,43 +1,6 @@
 """
 WekezaOmniOS Node Telemetry
 Phase 8+: Collects and reports fine-grained telemetry for teleportation nodes.
-"""Node telemetry event logging for Phase 2."""
-
-import json
-import os
-from datetime import datetime
-
-
-class NodeTelemetry:
-	def __init__(self, telemetry_file="logs/node_telemetry.jsonl"):
-		self.telemetry_file = telemetry_file
-		os.makedirs(os.path.dirname(telemetry_file), exist_ok=True)
-
-	def emit(self, event_type, payload):
-		event = {
-			"ts": datetime.utcnow().isoformat() + "Z",
-			"event": event_type,
-			"payload": payload,
-		}
-		with open(self.telemetry_file, "a", encoding="utf-8") as f:
-			f.write(json.dumps(event) + "\n")
-		return event
-
-	def read_recent(self, max_lines=100):
-		if not os.path.exists(self.telemetry_file):
-			return []
-		with open(self.telemetry_file, "r", encoding="utf-8") as f:
-			lines = f.readlines()[-max_lines:]
-		out = []
-		for line in lines:
-			line = line.strip()
-			if not line:
-				continue
-			try:
-				out.append(json.loads(line))
-			except json.JSONDecodeError:
-				continue
-		return out
 
 Telemetry data includes:
   - CPU / memory utilisation
@@ -97,6 +60,7 @@ class NodeTelemetry:
         self.node_id = node_id
         self.max_history = max_history
         self._samples: List[TelemetryRecord] = []
+        self._events: List[dict] = []
 
     def record(
         self,
@@ -156,3 +120,19 @@ class NodeTelemetry:
     def history(self) -> List[dict]:
         """Return all recorded samples as dicts."""
         return [s.to_dict() for s in self._samples]
+
+    def emit(self, event_type: str, payload: dict) -> dict:
+        """
+        Emit a named telemetry event (backward-compatibility helper).
+
+        Stores the event in the internal event log and returns it.
+        """
+        event = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "node_id": self.node_id,
+            "event": event_type,
+            "payload": payload,
+        }
+        self._events.append(event)
+        return event
+
