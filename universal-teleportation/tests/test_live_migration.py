@@ -1,7 +1,6 @@
 """
 WekezaOmniOS Live Migration Tests
 Phase 5: Validates the live migration engine components.
-UAT Phase 5: Live Migration Tests
 """
 import pytest
 from live_migration.memory_streamer import MemoryStreamer
@@ -110,20 +109,4 @@ def test_migration_controller_full_pipeline():
     assert result["process_id"] == 1234
     assert result["state"] == "COMPLETE"
     assert result["dirty_iterations"] >= 1
-from live_migration.migration_controller import MigrationController
 
-def test_migration_logic_flow():
-    streamer = MemoryStreamer(target_address="10.0.0.5")
-    tracker = DirtyPageTracker(total_pages=100)
-    controller = MigrationController(streamer, tracker)
-    
-    # Simulate some dirty pages
-    tracker.start_tracking()
-    tracker.mark_dirty(10)
-    tracker.mark_dirty(20)
-    
-    assert len(tracker.get_dirty_pages()) == 2
-    
-    # Test full execution
-    success = controller.start_migration(123)
-    assert success is True

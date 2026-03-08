@@ -2,15 +2,6 @@
 
 
 class Scheduler:
-    """
-    Decides where a teleported workload should go.
-    Returns the first available node, or None if no nodes are registered.
-    """
-
-    def choose_target(self, nodes):
-        for node_id, node in nodes.items():
-            return node
-        return None
     """Picks a target node with a deterministic score-based policy."""
 
     def choose_target(self, nodes, preferred_role=None):
@@ -42,3 +33,4 @@ class Scheduler:
             )
 
         return sorted(online_nodes, key=score)[0]
+

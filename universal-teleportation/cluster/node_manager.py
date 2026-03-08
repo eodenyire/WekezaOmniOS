@@ -1,10 +1,7 @@
 """
 WekezaOmniOS Node Manager
-Delegates node operations to the NodeRegistry.
+Phase 2: Delegates node operations to the NodeRegistry.
 """
-from .node_registry import NodeRegistry
-
-"""Node manager orchestration for Phase 2."""
 
 import os
 import sys
