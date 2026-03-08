@@ -26,3 +26,25 @@ class NodeRegistry:
     def list_nodes(self):
         """Returns the current fleet of nodes."""
         return self.nodes
+
+
+
+class NodeRegistry:
+    """
+    Keeps track of all nodes capable of receiving teleported workloads.
+    """
+
+    def __init__(self):
+        self.nodes = {}
+
+    def register_node(self, node_id, address, role="worker"):
+        self.nodes[node_id] = {
+            "address": address,
+            "role": role,
+        }
+
+    def get_node(self, node_id):
+        return self.nodes.get(node_id)
+
+    def list_nodes(self):
+        return self.nodes
