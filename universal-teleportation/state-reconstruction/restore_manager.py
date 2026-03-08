@@ -4,8 +4,27 @@ Orchestrates the rehydration of captured process snapshots.
 """
 
 import os
-from .criu_restore import restore_process
-from .environment_loader import load_environment
+import sys
+import importlib.util
+
+# Add parent directory to path for imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+# Load modules
+def load_module(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+criu_restore_module = load_module("criu_restore", os.path.join(current_dir, "criu_restore.py"))
+environment_loader_module = load_module("environment_loader", os.path.join(current_dir, "environment_loader.py"))
+
+restore_process = criu_restore_module.restore_process
+load_environment = environment_loader_module.load_environment
 
 class RestoreManager:
     def __init__(self, snapshot_dir="./snapshot"):

@@ -4,9 +4,36 @@ Main orchestrator for freezing and inspecting running processes.
 """
 
 import os
-from .process_inspector import get_process_info
-from .criu_wrapper import checkpoint_process
-from .utils import ensure_dir
+import sys
+
+# Add parent directory to path for imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+# Now we can import with proper module paths
+try:
+    from process_inspector import get_process_info
+    from criu_wrapper import checkpoint_process
+    from utils import ensure_dir
+except ImportError:
+    # Try relative import as fallback
+    import importlib.util
+    
+    def load_module(name, path):
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    
+    process_inspector = load_module("process_inspector", os.path.join(current_dir, "process_inspector.py"))
+    criu_wrapper = load_module("criu_wrapper", os.path.join(current_dir, "criu_wrapper.py"))
+    utils = load_module("utils", os.path.join(current_dir, "utils.py"))
+    
+    get_process_info = process_inspector.get_process_info
+    checkpoint_process = criu_wrapper.checkpoint_process
+    ensure_dir = utils.ensure_dir
 
 class CaptureManager:
     def __init__(self, snapshot_dir="./snapshot"):
