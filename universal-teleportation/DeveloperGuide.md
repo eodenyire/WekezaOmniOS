@@ -88,6 +88,3 @@ This table gives a **full developer overview**:
 * **What each file does**
 * Enables **tracking features from Phase 1 → Phase 20**
 ---
-
-
-Do you want me to do that next?
