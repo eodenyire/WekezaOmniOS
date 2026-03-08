@@ -1,0 +1,10 @@
+{
+    "nodes": [
+        {
+            "id": "local-node",
+            "address": "127.0.0.1",
+            "role": "controller",
+            "status": "ONLINE"
+        }
+    ]
+}
