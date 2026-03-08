@@ -1,196 +1,245 @@
-"""
-WekezaOmniOS API Routes
-Handles the routing logic for process teleportation operations.
-"""
+"""API routes for Universal Teleportation (Phase 1 + Phase 2)."""
 
+import importlib.util
 import os
 import sys
 import datetime
-import importlib.util
 from fastapi import APIRouter, HTTPException
 from models import (
-    TeleportRequest, 
-    TeleportResponse, 
-    CaptureRequest, 
-    SnapshotRequest, 
+    TeleportRequest,
+    TeleportResponse,
+    CaptureRequest,
+    SnapshotRequest,
     RestoreRequest,
-    TeleportStatus
+    TeleportStatus,
+    NodeRegisterRequest,
+    NodeRegisterResponse,
+    RemoteTeleportRequest,
+    RemoteTeleportResponse,
+    ContainerCheckpointRequest,
+    ContainerCheckpointResponse,
+    ContainerRestoreRequest,
+    ContainerRestoreResponse,
+    ContainerTeleportRequest,
+    ContainerTeleportResponse,
 )
 
-# Add parent directory to path for imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(CURRENT_DIR)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
-# Import modules using importlib (to handle hyphenated directory names)
+
 def load_module(name, path):
-    """Import a module from a file path."""
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
-# Import the state management modules
+
 capture_manager_module = load_module(
-    "capture_manager",
-    os.path.join(parent_dir, "state-capture", "capture_manager.py")
+    "capture_manager", os.path.join(BASE_DIR, "state-capture", "capture_manager.py")
 )
 snapshot_builder_module = load_module(
-    "snapshot_builder",
-    os.path.join(parent_dir, "snapshot-engine", "snapshot_builder.py")
-)
-snapshot_metadata_module = load_module(
-    "snapshot_metadata",
-    os.path.join(parent_dir, "snapshot-engine", "snapshot_metadata.py")
+    "snapshot_builder", os.path.join(BASE_DIR, "snapshot-engine", "snapshot_builder.py")
 )
 restore_manager_module = load_module(
-    "restore_manager",
-    os.path.join(parent_dir, "state-reconstruction", "restore_manager.py")
+    "restore_manager", os.path.join(BASE_DIR, "state-reconstruction", "restore_manager.py")
 )
+node_controller_module = load_module("node_controller", os.path.join(CURRENT_DIR, "node_controller.py"))
+teleport_controller_module = load_module("teleport_controller", os.path.join(CURRENT_DIR, "teleport_controller.py"))
 
 CaptureManager = capture_manager_module.CaptureManager
 build_snapshot = snapshot_builder_module.build_snapshot
-save_metadata = snapshot_metadata_module.save_metadata
 RestoreManager = restore_manager_module.RestoreManager
+NodeController = node_controller_module.NodeController
+TeleportController = teleport_controller_module.TeleportController
 
 router = APIRouter()
 
-# --- High-Level Orchestration ---
 
-@router.post("/teleport", response_model=TeleportResponse, tags=["Orchestration"])
-def teleport_process(request: TeleportRequest):
-    """
-    The 'One-Click' Jump. 
-    Triggers: Capture → Snapshot → Transfer → Restore.
-    """
-    print(f"[API] 🚀 Teleporting PID {request.process_id} from {request.source_env} to {request.target_env}")
-    
-    try:
-        # Phase 1: Local orchestration
-        # Step 1: Capture
-        manager = CaptureManager(snapshot_dir="./snapshots")
-        info = manager.capture_process(request.process_id)
-        
-        # Step 2: Snapshot
-        snapshot_dir = f"./snapshots/process_{request.process_id}"
-        snapshot_name = f"teleport_{request.process_id}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        output_file = f"./snapshots/{snapshot_name}.tar.gz"
-        
-        metadata = {
-            "process_id": request.process_id,
-            "timestamp": datetime.datetime.now().isoformat(),
-            "source_env": request.source_env,
-            "target_env": request.target_env,
-            "snapshot_name": snapshot_name
-        }
-        
-        build_snapshot(snapshot_dir, output_file, metadata)
-        
-        # Step 3: In Phase 1, transfer is local (no-op)
-        # Step 4: Would restore on target (simulated in Phase 1)
-        
-        return TeleportResponse(
-            status="success",
-            message=f"Process {request.process_id} teleportation completed. Snapshot: {snapshot_name}",
-            tracking_id=f"UAT-{request.process_id}-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
-        )
-    except Exception as e:
-        return TeleportResponse(
-            status="failed",
-            message=f"Teleportation failed: {str(e)}",
-            tracking_id=None
-        )
+@router.get("/status", response_model=TeleportStatus, tags=["System"])
+def get_engine_status():
+    dirs_ok = all(os.path.exists(d) for d in ["./snapshots", "./logs", "./temp"])
+    status_msg = "WekezaOmniOS UAT Engine is ready"
+    return TeleportStatus(
+        status="online" if dirs_ok else "degraded",
+        message=status_msg,
+        engine_load=0.2,
+    )
 
-# --- Atomic Operations ---
 
 @router.post("/capture", tags=["Process Control"])
 def capture_process_endpoint(request: CaptureRequest):
-    """Freeze and capture the current state of a running process."""
-    print(f"[API] 🧊 Capturing PID: {request.pid}")
-    
     try:
         manager = CaptureManager(snapshot_dir="./snapshots")
         info = manager.capture_process(request.pid)
         return {"status": "success", "pid": request.pid, "info": info}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Capture failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Capture failed: {e}")
+
 
 @router.post("/snapshot", tags=["Process Control"])
 def create_snapshot(request: SnapshotRequest):
-    """Package captured state into a portable .tar.gz snapshot."""
     name = request.snapshot_name or f"snapshot_pid_{request.pid}"
-    print(f"[API] 📦 Creating snapshot '{name}'")
-    
     try:
         snapshot_dir = f"./snapshots/process_{request.pid}"
         output_file = f"./snapshots/{name}.tar.gz"
-        
         metadata = {
             "process_id": request.pid,
-            "timestamp": datetime.datetime.now().isoformat(),
-            "snapshot_name": name
+            "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+            "snapshot_name": name,
         }
-        
         success = build_snapshot(snapshot_dir, output_file, metadata)
-        
-        if success:
-            return {"status": "success", "snapshot": name, "file": output_file}
-        else:
+        if not success:
             raise HTTPException(status_code=500, detail="Snapshot creation failed")
+        return {"status": "success", "snapshot": name, "file": output_file}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Snapshot failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Snapshot failed: {e}")
+
 
 @router.post("/restore", tags=["Process Control"])
 def restore_process_endpoint(request: RestoreRequest):
-    """Reanimate a process from a saved snapshot."""
-    print(f"[API] ⚡ Restoring from: {request.snapshot_name}")
-    
     try:
-        # Extract PID from snapshot name (expecting format like "snapshot_pid_1234")
-        # This is a simplified approach for Phase 1
         parts = request.snapshot_name.split("_")
+        pid = None
         if "pid" in parts:
             pid_index = parts.index("pid") + 1
             pid = int(parts[pid_index])
-        else:
-            # Fallback: try to extract any number
+        if pid is None:
             import re
-            numbers = re.findall(r'\d+', request.snapshot_name)
-            if numbers:
-                pid = int(numbers[0])
-            else:
+            numbers = re.findall(r"\d+", request.snapshot_name)
+            if not numbers:
                 raise ValueError("Cannot extract PID from snapshot name")
-        
+            pid = int(numbers[0])
+
         manager = RestoreManager(snapshot_dir="./snapshots")
         manager.restore_snapshot(pid)
-        
         return {"status": "success", "snapshot": request.snapshot_name, "pid": pid}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Restore failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Restore failed: {e}")
 
-# --- System Status ---
 
-@router.get("/status", response_model=TeleportStatus, tags=["System"])
-def get_engine_status():
-    """Verify the health and availability of the Teleportation Engine."""
-    
-    # Check directories
-    dirs_ok = all(os.path.exists(d) for d in ["./snapshots", "./logs", "./temp"])
-    
-    # Check for CRIU
-    import subprocess
+@router.post("/teleport", response_model=TeleportResponse, tags=["Orchestration"])
+def teleport_process(request: TeleportRequest):
     try:
-        subprocess.run(["which", "criu"], check=True, capture_output=True)
-        criu_available = True
-    except:
-        criu_available = False
-    
-    status_msg = "WekezaOmniOS UAT Engine is ready"
-    if not criu_available:
-        status_msg += " (CRIU not available - limited functionality)"
-    
-    return TeleportStatus(
-        status="online" if dirs_ok else "degraded",
-        message=status_msg,
-        engine_load=0.15
-    )
+        manager = CaptureManager(snapshot_dir="./snapshots")
+        manager.capture_process(request.process_id)
+        snapshot_dir = f"./snapshots/process_{request.process_id}"
+        snapshot_name = f"teleport_{request.process_id}_{datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        output_file = f"./snapshots/{snapshot_name}.tar.gz"
+        metadata = {
+            "process_id": request.process_id,
+            "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+            "source_env": request.source_env,
+            "target_env": request.target_env,
+            "snapshot_name": snapshot_name,
+        }
+        build_snapshot(snapshot_dir, output_file, metadata)
+        return TeleportResponse(
+            status="success",
+            message=f"Process {request.process_id} teleportation completed. Snapshot: {snapshot_name}",
+            tracking_id=f"UAT-{request.process_id}-{datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+        )
+    except Exception as e:
+        return TeleportResponse(status="failed", message=f"Teleportation failed: {e}", tracking_id=None)
+
+
+# -------- Phase 2: Cluster and Cross-Node Endpoints --------
+
+@router.post("/nodes/register", response_model=NodeRegisterResponse, tags=["Cluster"])
+def register_node(request: NodeRegisterRequest):
+    try:
+        controller = NodeController()
+        node = controller.register(request.node_id, request.address, role=request.role, port=request.port)
+        return NodeRegisterResponse(status="success", node=node)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Node registration failed: {e}")
+
+
+@router.get("/nodes", tags=["Cluster"])
+def list_nodes(only_online: bool = False):
+    try:
+        controller = NodeController()
+        nodes = controller.list_nodes(only_online=only_online)
+        return {"status": "success", "count": len(nodes), "nodes": nodes}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"List nodes failed: {e}")
+
+
+@router.get("/nodes/health", tags=["Cluster"])
+def cluster_health():
+    try:
+        controller = NodeController()
+        health = controller.health_all()
+        return {"status": "success", "health": health}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Health check failed: {e}")
+
+
+@router.post("/teleport/remote", response_model=RemoteTeleportResponse, tags=["Cross-Node"])
+def teleport_remote(request: RemoteTeleportRequest):
+    try:
+        controller = TeleportController()
+        result = controller.teleport_remote(
+            process_id=request.process_id,
+            target_node_id=request.target_node_id,
+            protocol=request.protocol,
+        )
+        return RemoteTeleportResponse(
+            status=result["status"],
+            tracking_id=result["tracking_id"],
+            target_node_id=result["target_node_id"],
+            transfer_protocol=result["transfer_protocol"],
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Remote teleport failed: {e}")
+
+
+# -------- Phase 3: Container Runtime Integration --------
+
+@router.post("/container/checkpoint", response_model=ContainerCheckpointResponse, tags=["Containers"])
+def checkpoint_container(request: ContainerCheckpointRequest):
+    try:
+        controller = TeleportController()
+        result = controller.checkpoint_container(
+            container_id=request.container_id,
+            runtime=request.runtime,
+            checkpoint_name=request.checkpoint_name,
+        )
+        return ContainerCheckpointResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Container checkpoint failed: {e}")
+
+
+@router.post("/container/restore", response_model=ContainerRestoreResponse, tags=["Containers"])
+def restore_container(request: ContainerRestoreRequest):
+    try:
+        controller = TeleportController()
+        result = controller.restore_container(
+            container_id=request.container_id,
+            runtime=request.runtime,
+            checkpoint_name=request.checkpoint_name,
+            target_node_id=request.target_node_id,
+        )
+        return ContainerRestoreResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Container restore failed: {e}")
+
+
+@router.post("/teleport/container", response_model=ContainerTeleportResponse, tags=["Containers"])
+def teleport_container(request: ContainerTeleportRequest):
+    try:
+        controller = TeleportController()
+        result = controller.teleport_container(
+            container_id=request.container_id,
+            target_node_id=request.target_node_id,
+            protocol=request.protocol,
+            runtime=request.runtime,
+            checkpoint_name=request.checkpoint_name,
+        )
+        return ContainerTeleportResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Container teleport failed: {e}")

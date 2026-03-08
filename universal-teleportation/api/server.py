@@ -10,7 +10,7 @@ from routes import router
 app = FastAPI(
     title="WekezaOmniOS Universal Teleportation API",
     description="The programmatic control plane for Wekeza's Universal Application Teleportation (UAT) engine.",
-    version="0.1.0",
+    version="0.3.0",
     contact={
         "name": "Emmanuel Odenyire Anyira",
         "url": "https://github.com/WekezaOmniOS",
@@ -26,7 +26,7 @@ def root():
     return {
         "service": "WekezaOmniOS UAT API",
         "status": "active",
-        "phase": "1.0 - Bootstrap"
+        "phase": "3.0 - Container Runtime Integration"
     }
 
 if __name__ == "__main__":

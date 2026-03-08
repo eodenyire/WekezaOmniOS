@@ -53,3 +53,16 @@ class DependencyResolver:
         result = (source_os, target_os) in compatible_pairs
         print(f"[DependencyResolver] {source_os} -> {target_os}: {'compatible' if result else 'incompatible'}")
         return result
+class DependencyResolver:
+
+    def resolve(self, metadata):
+
+        dependencies = metadata.get("dependencies", [])
+
+        resolved = []
+
+        for dep in dependencies:
+
+            resolved.append(dep)
+
+        return resolved

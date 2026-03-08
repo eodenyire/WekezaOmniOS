@@ -309,6 +309,3 @@ respect.
 
 ---
 
-✅ If you'd like, the **next step** could be something very useful:
-
-I can help you design the **actual engineering roadmap for WekezaOmniOS (Phase 1 → Phase 10)** so that it becomes a **real buildable system rather than just an idea**.

@@ -1,9 +1,18 @@
 security:
+	encryption: true
+	authentication: true
+	authorization: true
+	certificate_rotation_days: 30
 
-  encryption: true
+encryption:
+	enabled: true
+	key_path: configs/.encryption.key
+	algorithm: fernet
 
-  authentication: true
+transport:
+	default_protocol: auto
+	allow_ssh: true
+	strict_host_key_checking: false
 
-  authorization: true
-
-  certificate_rotation_days: 30
+integrity:
+	checksum: sha256
