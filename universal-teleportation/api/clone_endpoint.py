@@ -10,26 +10,26 @@ router = APIRouter()
 
 class CloneRequest(BaseModel):
     process_id: int
-    target_node_ids: List[str]  # Multiple nodes for simultaneous cloning
+    target_node_ids: List[str]  # List enables simultaneous cluster-wide cloning
 
 @router.post("/teleport/clone", tags=["Orchestration"])
 def initiate_clone(request: CloneRequest):
     """
     Triggers the Phase 3 pipeline:
     1. Single State Capture
-    2. One-to-Many Distribution
-    3. Multi-Node Reanimation
+    2. Multi-Node distribution
     """
-    print(f"[API] 👥 Clone Request: PID {request.process_id} -> Nodes {request.target_node_ids}")
+    print(f"[API] 👥 Clone Request Received: PID {request.process_id} -> Targets: {request.target_node_ids}")
     
     if not request.target_node_ids:
         raise HTTPException(status_code=400, detail="At least one target node must be specified.")
 
+    # Logic Handoff: In production, this calls teleportation_api.clone.clone_process
     return {
         "status": "CLONE_INITIATED",
         "details": {
             "source_pid": request.process_id,
             "replica_count": len(request.target_node_ids),
-            "targets": request.target_node_ids
+            "target_nodes": request.target_node_ids
         }
     }
