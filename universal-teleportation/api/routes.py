@@ -16,6 +16,12 @@ from models import (
     NodeRegisterResponse,
     RemoteTeleportRequest,
     RemoteTeleportResponse,
+    ContainerCheckpointRequest,
+    ContainerCheckpointResponse,
+    ContainerRestoreRequest,
+    ContainerRestoreResponse,
+    ContainerTeleportRequest,
+    ContainerTeleportResponse,
 )
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -190,3 +196,50 @@ def teleport_remote(request: RemoteTeleportRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Remote teleport failed: {e}")
+
+
+# -------- Phase 3: Container Runtime Integration --------
+
+@router.post("/container/checkpoint", response_model=ContainerCheckpointResponse, tags=["Containers"])
+def checkpoint_container(request: ContainerCheckpointRequest):
+    try:
+        controller = TeleportController()
+        result = controller.checkpoint_container(
+            container_id=request.container_id,
+            runtime=request.runtime,
+            checkpoint_name=request.checkpoint_name,
+        )
+        return ContainerCheckpointResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Container checkpoint failed: {e}")
+
+
+@router.post("/container/restore", response_model=ContainerRestoreResponse, tags=["Containers"])
+def restore_container(request: ContainerRestoreRequest):
+    try:
+        controller = TeleportController()
+        result = controller.restore_container(
+            container_id=request.container_id,
+            runtime=request.runtime,
+            checkpoint_name=request.checkpoint_name,
+            target_node_id=request.target_node_id,
+        )
+        return ContainerRestoreResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Container restore failed: {e}")
+
+
+@router.post("/teleport/container", response_model=ContainerTeleportResponse, tags=["Containers"])
+def teleport_container(request: ContainerTeleportRequest):
+    try:
+        controller = TeleportController()
+        result = controller.teleport_container(
+            container_id=request.container_id,
+            target_node_id=request.target_node_id,
+            protocol=request.protocol,
+            runtime=request.runtime,
+            checkpoint_name=request.checkpoint_name,
+        )
+        return ContainerTeleportResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Container teleport failed: {e}")

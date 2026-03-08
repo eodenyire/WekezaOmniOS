@@ -7,16 +7,42 @@
             "port": 8000,
             "status": "ONLINE",
             "created_at": "2026-03-08T00:00:00+00:00",
-            "updated_at": "2026-03-08T00:00:00+00:00",
+            "updated_at": "2026-03-08T17:32:55.450454+00:00",
             "metadata": {
                 "load": 0.1,
                 "memory_free_mb": 4096
             },
             "last_seen": "2026-03-08T15:48:28.250415"
+        },
+        {
+            "id": "phase3-local",
+            "address": "127.0.0.1",
+            "role": "controller",
+            "port": 8000,
+            "status": "ONLINE",
+            "updated_at": "2026-03-08T17:32:55.450941+00:00",
+            "metadata": {},
+            "created_at": "2026-03-08T17:17:25.661798+00:00"
+        },
+        {
+            "id": "compute-node-01",
+            "address": "192.168.1.100",
+            "role": "worker",
+            "port": 8000,
+            "status": "OFFLINE",
+            "updated_at": "2026-03-08T17:32:55.951392+00:00",
+            "metadata": {},
+            "created_at": "2026-03-08T17:32:00.857684+00:00"
+        },
+        {
+            "id": "compute-node-02",
+            "address": "192.168.1.101",
+            "role": "worker",
+            "port": 8000,
+            "status": "OFFLINE",
+            "updated_at": "2026-03-08T17:32:56.452615+00:00",
+            "metadata": {},
+            "created_at": "2026-03-08T17:32:00.876189+00:00"
         }
-    ],
-    "metadata": {
-        "created": "2026-03-08T15:48:28.250368",
-        "last_updated": "2026-03-08T15:48:28.250419"
-    }
+    ]
 }

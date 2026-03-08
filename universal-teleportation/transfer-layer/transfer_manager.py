@@ -64,3 +64,25 @@ class TransferManager:
         if not os.path.exists(self.snapshot_dir):
             return []
         return [d for d in os.listdir(self.snapshot_dir) if os.path.isdir(os.path.join(self.snapshot_dir, d))]
+
+    def send_artifact(self, artifact_path, target_path, target_host="127.0.0.1", protocol="auto", user=None):
+        """
+        Transfer any snapshot artifact (file or directory), used by Phase 3 container checkpoints.
+        """
+        if not os.path.exists(artifact_path):
+            raise FileNotFoundError(f"artifact not found: {artifact_path}")
+
+        if protocol == "local" or (protocol == "auto" and target_host in ("127.0.0.1", "localhost", "::1")):
+            destination = copy_snapshot_local(artifact_path, target_path)
+            return {"success": True, "destination": destination, "protocol": "local"}
+
+        success, result = send_snapshot(
+            snapshot_path=artifact_path,
+            target_host=target_host,
+            target_path=target_path,
+            protocol=protocol,
+            user=user,
+        )
+        if not success:
+            raise RuntimeError(f"artifact transfer failed: {result}")
+        return {"success": True, "destination": result, "protocol": protocol}

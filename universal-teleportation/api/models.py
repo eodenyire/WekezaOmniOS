@@ -69,3 +69,52 @@ class RemoteTeleportResponse(BaseModel):
     tracking_id: str
     target_node_id: str
     transfer_protocol: str
+
+
+# --- Phase 3 Container Runtime Models ---
+
+class ContainerCheckpointRequest(BaseModel):
+    container_id: str
+    runtime: str = "auto"
+    checkpoint_name: str = "uat-checkpoint"
+
+
+class ContainerCheckpointResponse(BaseModel):
+    status: str
+    runtime: str
+    checkpoint_name: str
+    checkpoint_path: Optional[str] = None
+    message: Optional[str] = None
+
+
+class ContainerRestoreRequest(BaseModel):
+    container_id: str
+    runtime: str = "auto"
+    checkpoint_name: str = "uat-checkpoint"
+    target_node_id: Optional[str] = None
+
+
+class ContainerRestoreResponse(BaseModel):
+    status: str
+    runtime: str
+    container_id: str
+    message: Optional[str] = None
+
+
+class ContainerTeleportRequest(BaseModel):
+    container_id: str
+    target_node_id: str
+    protocol: str = "auto"
+    runtime: str = "auto"
+    checkpoint_name: str = "uat-checkpoint"
+
+
+class ContainerTeleportResponse(BaseModel):
+    status: str
+    tracking_id: str
+    container_id: str
+    target_node_id: str
+    runtime: str
+    transfer_protocol: str
+    checkpoint_name: str
+    message: Optional[str] = None
