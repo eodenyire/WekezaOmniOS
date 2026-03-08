@@ -1,0 +1,257 @@
+Great — Phase 4 is where the teleportation system becomes much more scalable and cloud-ready. Instead of sending snapshots directly node → node, the system introduces distributed snapshot storage. This is similar to how large systems (like Kubernetes, VMware, or cloud migration platforms) manage state.
+________________________________________
+🚀 Phase 4 — Distributed Snapshot Storage
+🎯 Goal
+Create a central snapshot storage system where teleportation snapshots can be stored, retrieved, and reused.
+Before Phase 4:
+Node A
+   ↓
+Direct transfer
+   ↓
+Node B
+After Phase 4:
+Node A
+   ↓
+Snapshot Storage
+   ↓
+Node B
+Benefits:
+•	teleport to any node
+•	store snapshots for later restore
+•	enable cloud backups
+•	support large clusters
+________________________________________
+🧠 Core Idea
+Snapshots become first-class objects in the system.
+Example snapshot:
+snapshot/
+  UAT-2026-03-08-1001/
+      memory.dump
+      filesystem.tar
+      metadata.json
+Stored in:
+snapshot-storage/
+________________________________________
+🏗️ Phase 4 Architecture
+Running Application
+        ↓
+State Capture
+        ↓
+Snapshot Engine
+        ↓
+Snapshot Storage Manager
+        ↓
+Distributed Storage Backend
+        ↓
+Target Node
+        ↓
+State Reconstruction
+New component:
+Snapshot Storage Manager
+________________________________________
+📂 New Phase 4 Folders
+Add to your project:
+universal-teleportation/
+
+snapshot-storage/
+    storage_manager.py
+    local_storage.py
+    s3_backend.py
+    storage_index.py
+
+configs/
+    storage.yaml
+
+tests/
+    test_storage_manager.py
+________________________________________
+📦 storage_manager.py
+Central controller for snapshot storage.
+import os
+
+class StorageManager:
+    """
+    Manages snapshot storage across different backends.
+    """
+
+    def __init__(self, backend):
+        self.backend = backend
+
+    def store_snapshot(self, snapshot_path, snapshot_id):
+        return self.backend.save(snapshot_path, snapshot_id)
+
+    def retrieve_snapshot(self, snapshot_id):
+        return self.backend.load(snapshot_id)
+
+    def list_snapshots(self):
+        return self.backend.list()
+________________________________________
+💾 local_storage.py
+Simple filesystem storage backend.
+import os
+import shutil
+
+class LocalStorage:
+
+    def __init__(self, storage_dir="snapshot-storage/data"):
+        self.storage_dir = storage_dir
+        os.makedirs(storage_dir, exist_ok=True)
+
+    def save(self, snapshot_path, snapshot_id):
+
+        destination = os.path.join(self.storage_dir, snapshot_id)
+
+        shutil.copytree(snapshot_path, destination)
+
+        return destination
+
+    def load(self, snapshot_id):
+
+        return os.path.join(self.storage_dir, snapshot_id)
+
+    def list(self):
+
+        return os.listdir(self.storage_dir)
+________________________________________
+☁️ s3_backend.py
+Cloud storage backend (prototype).
+import boto3
+
+class S3Backend:
+
+    def __init__(self, bucket):
+        self.s3 = boto3.client("s3")
+        self.bucket = bucket
+
+    def save(self, snapshot_path, snapshot_id):
+
+        for file in snapshot_path:
+
+            self.s3.upload_file(
+                file,
+                self.bucket,
+                f"{snapshot_id}/{file}"
+            )
+
+    def load(self, snapshot_id):
+
+        return f"s3://{self.bucket}/{snapshot_id}"
+________________________________________
+📑 storage_index.py
+Tracks snapshot metadata.
+class StorageIndex:
+
+    def __init__(self):
+        self.index = {}
+
+    def register_snapshot(self, snapshot_id, location):
+
+        self.index[snapshot_id] = location
+
+    def get_snapshot(self, snapshot_id):
+
+        return self.index.get(snapshot_id)
+
+    def list_snapshots(self):
+
+        return list(self.index.keys())
+________________________________________
+⚙️ storage.yaml
+Configuration for storage backend.
+storage:
+
+  backend: local
+
+  local:
+    directory: snapshot-storage/data
+
+  s3:
+    bucket: uat-snapshots
+________________________________________
+🧪 test_storage_manager.py
+Add automated tests.
+from snapshot_storage.storage_manager import StorageManager
+from snapshot_storage.local_storage import LocalStorage
+
+def test_storage():
+
+    backend = LocalStorage()
+    manager = StorageManager(backend)
+
+    snapshots = manager.list_snapshots()
+
+    assert isinstance(snapshots, list)
+________________________________________
+🔁 Updated Teleportation Workflow
+Teleportation now becomes:
+Application
+   ↓
+State Capture
+   ↓
+Snapshot Engine
+   ↓
+Storage Manager
+   ↓
+Snapshot Storage
+   ↓
+Transfer Layer
+   ↓
+Target Node
+   ↓
+State Reconstruction
+________________________________________
+🌍 Example Teleportation Flow
+Developer triggers teleport:
+POST /teleport
+{
+  "container_id": "api-service",
+  "target_node": "node-3"
+}
+System flow:
+Container checkpoint
+       ↓
+Snapshot created
+       ↓
+Snapshot stored in storage
+       ↓
+Target node downloads snapshot
+       ↓
+Container restored
+________________________________________
+📊 Benefits of Phase 4
+After Phase 4, WekezaOmniOS can:
+•	store snapshots centrally
+•	restore snapshots anytime
+•	teleport to any node
+•	integrate with cloud storage
+•	support large clusters
+This is similar to how systems like:
+•	VMware
+•	Kubernetes
+•	AWS migration tools
+handle state migration.
+________________________________________
+🔮 Phase 5 — Live Migration
+Phase 5 introduces true live migration.
+Instead of pausing the application:
+Pause
+Checkpoint
+Transfer
+Resume
+you get:
+App keeps running
+Memory streamed
+Final sync
+App resumes instantly
+This requires:
+dirty page tracking
+memory streaming
+delta snapshots
+New modules will include:
+live-migration/
+    memory_streamer.py
+    dirty_page_tracker.py
+    migration_controller.py
+________________________________________
+✅ If you want, the next critical step (and the most exciting one) is Phase 5, where we implement live application teleportation similar to VMware vMotion and Kubernetes live migration.
+
