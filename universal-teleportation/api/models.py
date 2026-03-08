@@ -42,3 +42,30 @@ class TeleportStatus(BaseModel):
     status: str
     message: Optional[str] = None
     engine_load: float = 0.0
+
+
+# --- Phase 2 Cluster Models ---
+
+class NodeRegisterRequest(BaseModel):
+    node_id: str
+    address: str
+    role: str = "worker"
+    port: int = 8000
+
+
+class NodeRegisterResponse(BaseModel):
+    status: str
+    node: dict
+
+
+class RemoteTeleportRequest(BaseModel):
+    process_id: int
+    target_node_id: str
+    protocol: str = "auto"
+
+
+class RemoteTeleportResponse(BaseModel):
+    status: str
+    tracking_id: str
+    target_node_id: str
+    transfer_protocol: str

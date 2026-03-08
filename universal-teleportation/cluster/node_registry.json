@@ -4,7 +4,19 @@
             "id": "local-node",
             "address": "127.0.0.1",
             "role": "controller",
-            "status": "ONLINE"
+            "port": 8000,
+            "status": "ONLINE",
+            "created_at": "2026-03-08T00:00:00+00:00",
+            "updated_at": "2026-03-08T00:00:00+00:00",
+            "metadata": {
+                "load": 0.1,
+                "memory_free_mb": 4096
+            },
+            "last_seen": "2026-03-08T15:48:28.250415"
         }
-    ]
+    ],
+    "metadata": {
+        "created": "2026-03-08T15:48:28.250368",
+        "last_updated": "2026-03-08T15:48:28.250419"
+    }
 }

@@ -1,27 +1,21 @@
 nodes:
-
+  local-node:
+    host: 127.0.0.1
+    role: controller
+    port: 8000
   node-1:
     host: 192.168.1.10
-    role: developer
-
+    role: worker
+    port: 8000
   node-2:
     host: 192.168.1.20
     role: cloud
-
+    port: 8000
   node-3:
     host: 192.168.1.30
     role: testing
+    port: 8000
 
-nodes:
-
-  node-1:
-    host: 192.168.1.10
-    role: developer
-
-  node-2:
-    host: 192.168.1.20
-    role: cloud
-
-  node-3:
-    host: 192.168.1.30
-    role: testing
+scheduler:
+  preferred_role: worker
+  fail_on_no_online_nodes: true
