@@ -26,3 +26,14 @@ def copy_snapshot_ssh(snapshot_path, remote_host, remote_path):
 
     # TODO: Phase 2 - Implement with paramiko or subprocess + scp
     return True
+
+
+
+import subprocess
+
+def send_via_ssh(snapshot_path, host, path):
+    subprocess.run([
+        "scp",
+        snapshot_path,
+        f"{host}:{path}"
+    ])
