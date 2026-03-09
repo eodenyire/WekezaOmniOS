@@ -5,10 +5,10 @@ Main entry point for the Teleportation Control Plane.
 
 import uvicorn
 from fastapi import FastAPI
-from .routes import router
-from .ide_routes import router as ide_router
-from .terminal_routes import router as terminal_router
-from .ai_routes import router as ai_router
+from .routes.teleportation_routes import router
+from .routes.developer_routes import router as ide_router
+from .routes.terminal_routes import router as terminal_router
+from .routes.ai_routes import router as ai_router
 
 app = FastAPI(
     title="WekezaOmniOS Universal Teleportation API",
