@@ -29,6 +29,21 @@ class RuntimeDispatcher:
 
     def __init__(self):
         self.resolver = DependencyResolver()
+        self._adapters = {
+            "linux": LinuxAdapter(),
+            "windows": WindowsAdapter(),
+            "android": AndroidAdapter(),
+            "macos": IOSAdapter(),
+            "ios": IOSAdapter(),
+        }
+
+    def translate(self, snapshot, target_os):
+        if target_os not in self._adapters:
+            return snapshot
+        
+        adapter = self._adapters[target_os]
+        return adapter.translate_process_state(snapshot)
+
 
     def get_adapter(self, os_name: str):
         """
@@ -44,13 +59,13 @@ class RuntimeDispatcher:
             ValueError: If the OS is not supported.
         """
         key = os_name.lower()
-        cls = ADAPTER_MAP.get(key)
-        if cls is None:
+        adapter = self._adapters.get(key)
+        if adapter is None:
             raise ValueError(
                 f"[RuntimeDispatcher] Unsupported OS: '{os_name}'. "
-                f"Supported: {list(ADAPTER_MAP.keys())}"
+                f"Supported: {list(self._adapters.keys())}"
             )
-        return cls()
+        return adapter
 
     def dispatch(self, snapshot_data: dict, source_os: str, target_os: str) -> dict:
         """
@@ -97,4 +112,4 @@ class RuntimeDispatcher:
 
     def supported_os_list(self) -> list:
         """Return the list of supported target operating systems."""
-        return list(ADAPTER_MAP.keys())
+        return list(self._adapters.keys())

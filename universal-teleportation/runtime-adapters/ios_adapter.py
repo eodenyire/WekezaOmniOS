@@ -29,4 +29,21 @@ class IOSAdapter:
         translated["target_os"] = "macos"
         translated["path_format"] = "HFS+/APFS"
         print(f"[{self.os_name} Adapter] Mapping SIGTERM -> SIGTERM (POSIX compatible)")
+
+        # 1. Viewport Translation: Adjust resolution for Retina displays
+        if 'ui_config' not in translated:
+            translated['ui_config'] = {}
+        translated['ui_config']['scaling'] = "ios_retina"
+        print("[Apple Adapter]   - Set UI scaling to 'ios_retina'")
+        
+        # 2. Path Mapping: Map to iOS Sandbox
+        if 'env' not in translated:
+            translated['env'] = {}
+        translated['env']['DATA_PATH'] = "/var/mobile/Containers/Data/Application/MilkApp"
+        print("[Apple Adapter]   - Mapped DATA_PATH to iOS sandbox")
+
+        # 3. Input Mapping: Map Mouse Events to Touch Gestures
+        translated['input_driver'] = "ios_touch"
+        print("[Apple Adapter]   - Set input driver to 'ios_touch'")
+
         return translated

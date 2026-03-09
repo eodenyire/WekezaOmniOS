@@ -87,6 +87,13 @@
       font-size: 13px;
       background: rgba(255,255,255,0.04);
     }
+    #terminal-container {
+        height: 400px;
+        padding: 10px;
+        background: var(--bg-soft);
+        border-radius: 10px;
+        margin-top: 14px;
+    }
     @media (max-width: 640px) {
       .row { grid-template-columns: 1fr; }
     }
@@ -168,6 +175,11 @@
         <h2>Console Output</h2>
         <textarea id="output" readonly></textarea>
       </section>
+
+      <section class="card" style="grid-column: 1/-1;">
+        <h2>Live Terminal</h2>
+        <div id="terminal-container"></div>
+      </section>
     </div>
   </div>
 
@@ -178,6 +190,8 @@
     </section>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
   <script>
     const $ = (id) => document.getElementById(id);
     const bridge = {
@@ -196,6 +210,48 @@
       $('log').value = line + $('log').value;
       console.log(msg);
     };
+
+    function initTerminal() {
+        const term = new Terminal({
+            cursorBlink: true,
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+            fontSize: 14,
+            theme: {
+                background: 'var(--bg-soft)',
+                foreground: 'var(--ink)',
+                cursor: 'var(--accent)',
+                selection: 'rgba(96, 165, 250, 0.3)',
+            }
+        });
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        
+        const terminalContainer = document.getElementById('terminal-container');
+        term.open(terminalContainer);
+        
+        fitAddon.fit();
+        window.addEventListener('resize', () => fitAddon.fit());
+
+        const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${location.host}/ws/terminal`;
+        const socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+            term.write('Terminal connected\\r\\n');
+        };
+
+        socket.onmessage = (event) => {
+            term.write(event.data);
+        };
+
+        socket.onclose = () => {
+            term.write('\\r\\nConnection closed.\\r\\n');
+        };
+
+        term.onData((data) => {
+            socket.send(data);
+        });
+    }
 
     const preset = (id, ip, role) => {
       $('nodeId').value = id;

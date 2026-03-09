@@ -7,6 +7,8 @@ import uvicorn
 from fastapi import FastAPI
 from .routes import router
 from .ide_routes import router as ide_router
+from .terminal_routes import router as terminal_router
+from .ai_routes import router as ai_router
 
 app = FastAPI(
     title="WekezaOmniOS Universal Teleportation API",
@@ -21,6 +23,8 @@ app = FastAPI(
 # Modular route inclusion
 app.include_router(router)
 app.include_router(ide_router)
+app.include_router(ai_router)
+app.include_router(terminal_router)
 
 @app.get("/", tags=["Health Check"])
 def root():

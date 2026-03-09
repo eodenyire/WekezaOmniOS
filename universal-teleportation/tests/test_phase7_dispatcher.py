@@ -8,11 +8,12 @@ import os
 # Ensure the runtime-adapters directory is in the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from runtime-adapters.runtime_dispatcher import RuntimeDispatcher
-from runtime-adapters.apple_adapter import AppleAdapter
-from runtime-adapters.android_adapter import AndroidAdapter
-from runtime-adapters.windows_adapter import WindowsAdapter
-from runtime-adapters.linux_adapter import LinuxAdapter
+from runtime_adapters.runtime_dispatcher import RuntimeDispatcher
+from runtime_adapters.apple_adapter import AppleAdapter
+from runtime_adapters.android_adapter import AndroidAdapter
+from runtime_adapters.windows_adapter import WindowsAdapter
+from runtime_adapters.linux_adapter import LinuxAdapter
+from runtime_adapters.ios_adapter import IOSAdapter
 
 class TestRuntimeDispatcher(unittest.TestCase):
 
@@ -33,15 +34,15 @@ class TestRuntimeDispatcher(unittest.TestCase):
         self.assertIn("android", self.dispatcher._adapters)
         self.assertIn("windows", self.dispatcher._adapters)
         self.assertIn("linux", self.dispatcher._adapters)
-        self.assertEqual(self.dispatcher._adapters["ios"], AppleAdapter)
+        self.assertEqual(self.dispatcher._adapters["ios"], self.dispatcher.get_adapter("ios"))
 
     def test_get_apple_adapter(self):
         """Test retrieving the Apple adapter for 'ios' and 'macos'."""
         adapter_ios = self.dispatcher.get_adapter("ios")
-        self.assertIsInstance(adapter_ios, AppleAdapter)
+        self.assertIsInstance(adapter_ios, IOSAdapter)
         
         adapter_macos = self.dispatcher.get_adapter("macos")
-        self.assertIsInstance(adapter_macos, AppleAdapter)
+        self.assertIsInstance(adapter_macos, IOSAdapter)
 
     def test_get_android_adapter(self):
         """Test retrieving the Android adapter."""
@@ -60,8 +61,8 @@ class TestRuntimeDispatcher(unittest.TestCase):
 
     def test_get_unknown_adapter(self):
         """Test that an unknown OS returns None."""
-        adapter = self.dispatcher.get_adapter("amigaos")
-        self.assertIsNone(adapter)
+        with self.assertRaises(ValueError):
+            self.dispatcher.get_adapter("amigaos")
 
     def test_translate_for_ios(self):
         """Test the full translation flow for iOS."""

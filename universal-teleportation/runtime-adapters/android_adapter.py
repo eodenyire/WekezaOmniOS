@@ -18,6 +18,14 @@ class AndroidAdapter:
         
         # Phase 1 Mock Logic: Sandbox permission check
         print(f"[{self.os_name} Adapter] Injecting Android manifest permissions...")
+        if 'permissions' not in translated_state:
+            translated_state['permissions'] = []
+        translated_state['permissions'].append("android.permission.CAMERA")
+
+        if 'env' not in translated_state:
+            translated_state['env'] = {}
+        translated_state['env']['DATA_PATH'] = "/storage/emulated/0/MilkApp"
+
         return translated_state
 
     def check_permissions(self):

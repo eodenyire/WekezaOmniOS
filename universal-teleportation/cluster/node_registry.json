@@ -21,9 +21,8 @@
             "ip": "127.0.0.1",
             "role": "controller",
             "port": 8000,
-            "status": "ONLINE",
-            "metadata": {},
-            "last_seen": "2026-03-09T04:09:14.305179"
+            "status": "active",
+            "metadata": {}
         },
         {
             "id": "compute-node-01",
