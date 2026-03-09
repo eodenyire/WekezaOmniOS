@@ -61,6 +61,7 @@ class NodeRegisterResponse(BaseModel):
 class RemoteTeleportRequest(BaseModel):
     process_id: int
     target_node_id: str
+    target_os: str  # Added for the Universal Mirror
     protocol: str = "auto"
 
 

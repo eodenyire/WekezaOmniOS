@@ -29,12 +29,16 @@ node_controller_module = _load_module(
 telemetry_module = _load_module(
 	"node_telemetry", os.path.join(BASE_DIR, "monitoring", "node_telemetry.py")
 )
+runtime_dispatcher_module = _load_module(
+    "runtime_dispatcher", os.path.join(BASE_DIR, "runtime_dispatcher.py")
+)
 
 CaptureManager = capture_manager_module.CaptureManager
 build_snapshot = snapshot_builder_module.build_snapshot
 TransferManager = transfer_manager_module.TransferManager
 NodeController = node_controller_module.NodeController
 NodeTelemetry = telemetry_module.NodeTelemetry
+RuntimeDispatcher = runtime_dispatcher_module.RuntimeDispatcher
 
 container_adapter_module = _load_module(
 	"container_adapter", os.path.join(BASE_DIR, "runtime-adapters", "container_adapter.py")
@@ -57,11 +61,12 @@ class TeleportController:
 		self.transfer_manager = TransferManager(snapshot_dir=os.path.join(BASE_DIR, "snapshots"))
 		self.node_controller = NodeController()
 		self.telemetry = NodeTelemetry("teleport-controller")
+		self.runtime_dispatcher = RuntimeDispatcher()
 		self.container_adapter = ContainerAdapter()
 		self.container_checkpoint = ContainerCheckpointEngine(snapshot_dir=os.path.join(BASE_DIR, "snapshots"))
 		self.container_restore = ContainerRestoreEngine(snapshot_dir=os.path.join(BASE_DIR, "snapshots"))
 
-	def teleport_remote(self, process_id, target_node_id, protocol="auto"):
+	def teleport_remote(self, process_id, target_node_id, target_os, protocol="auto"):
 		tracking_id = f"phase2-{process_id}-{datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
 
 		target_node = self.node_controller.get_node(target_node_id)
@@ -75,14 +80,22 @@ class TeleportController:
 		source_dir = os.path.join(BASE_DIR, "snapshots", f"process_{process_id}")
 		artifact_name = f"remote_{tracking_id}.tar.gz"
 		artifact_path = os.path.join(BASE_DIR, "snapshots", artifact_name)
+
+		# --- Universal Mirror Translation Step ---
 		metadata = {
 			"tracking_id": tracking_id,
 			"process_id": process_id,
 			"target_node_id": target_node_id,
 			"target_address": target_node.get("address"),
 			"created_at": datetime.datetime.utcnow().isoformat() + "Z",
+			"original_os": "linux",  # Assuming dev environment is Linux
+			"target_os": target_os,
 		}
-		ok = build_snapshot(source_dir, artifact_path, metadata)
+
+		translated_metadata = self.runtime_dispatcher.dispatch(metadata, target_os)
+		# --- End Translation ---
+
+		ok = build_snapshot(source_dir, artifact_path, translated_metadata)
 		if not ok:
 			raise RuntimeError("failed to build snapshot artifact")
 
@@ -182,7 +195,7 @@ class TeleportController:
 		}
 
 	def teleport_container(self, container_id, target_node_id, protocol="auto", runtime="auto", checkpoint_name="uat-checkpoint"):
-		tracking_id = f"phase3-{container_id[:12]}-{datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+		tracking_id = f"phase3-{container_id[:12]}-{datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d%H%M%S')}"
 		target_node = self.node_controller.get_node(target_node_id)
 		if not target_node:
 			raise ValueError(f"target node not found: {target_node_id}")

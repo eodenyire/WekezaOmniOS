@@ -1,7 +1,35 @@
 """
 WekezaOmniOS Apple Runtime Adapter
-Handles teleportation mapping for macOS, iOS, and watchOS (Darwin Kernel).
+Phase 7: Translates Windows UI/System state for iOS/macOS.
 """
+
+class AppleAdapter:
+    """
+    Adapter for preparing process state for iOS/macOS execution environments.
+    """
+    def translate_runtime(self, snapshot_metadata: dict) -> dict:
+        """
+        Adapt a snapshot for macOS / iOS execution.
+        """
+        print("[Apple Adapter] 🍎 Adjusting for iOS/macOS...")
+        
+        # 1. Viewport Translation: Adjust resolution for Retina displays
+        if 'ui_config' not in snapshot_metadata:
+            snapshot_metadata['ui_config'] = {}
+        snapshot_metadata['ui_config']['scaling'] = "ios_retina"
+        print("[Apple Adapter]   - Set UI scaling to 'ios_retina'")
+        
+        # 2. Path Mapping: Map to iOS Sandbox
+        if 'env' not in snapshot_metadata:
+            snapshot_metadata['env'] = {}
+        snapshot_metadata['env']['DATA_PATH'] = "/var/mobile/Containers/Data/Application/MilkApp"
+        print("[Apple Adapter]   - Mapped DATA_PATH to iOS sandbox")
+
+        # 3. Input Mapping: Map Mouse Events to Touch Gestures
+        snapshot_metadata['input_driver'] = "ios_touch"
+        print("[Apple Adapter]   - Set input driver to 'ios_touch'")
+        
+        return snapshot_metadata
 
 class AppleAdapter:
     def __init__(self):

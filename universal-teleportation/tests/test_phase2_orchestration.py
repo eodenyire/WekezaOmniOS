@@ -58,7 +58,8 @@ def test_cluster_management():
     
     if not cluster_manager_module:
         print("[⚠️] Cluster manager module not available")
-        return True
+        assert True, "Module not available, skipping"
+        return
     
     try:
         ClusterManager = cluster_manager_module.ClusterManager
@@ -75,10 +76,10 @@ def test_cluster_management():
         print(f"    Health percentage: {stats.get('health_percentage')}%")
         
         print("\n✅ Cluster management test PASSED")
-        return True
+        assert True
     except Exception as e:
         print(f"[❌] Cluster management test failed: {e}")
-        return False
+        assert False, f"Test failed: {e}"
 
 
 def test_network_transfer():
@@ -89,7 +90,8 @@ def test_network_transfer():
     
     if not network_transfer_module:
         print("[⚠️] Network transfer module not available")
-        return True
+        assert True, "Module not available, skipping"
+        return
     
     try:
         print("\n[📦] Initializing local transfer engine...")
@@ -114,7 +116,7 @@ def test_network_transfer():
             print(f"    ✅ Transfer successful")
             print(f"    File size: {stats.get('file_size')} bytes")
         else:
-            return False
+            assert False, "Transfer failed"
         
         print("[📋] Creating transfer manifest...")
         manifest_transfer = ManifestTransfer()
@@ -123,10 +125,10 @@ def test_network_transfer():
         print(f"    ✅ Manifest created with {len(manifest.get('files', []))} files")
         
         print("\n✅ Network transfer test PASSED")
-        return True
+        assert True
     except Exception as e:
         print(f"[❌] Network transfer test failed: {e}")
-        return False
+        assert False, f"Test failed: {e}"
 
 
 def test_container_adapters():
@@ -137,7 +139,8 @@ def test_container_adapters():
     
     if not container_adapters_module:
         print("[⚠️] Container adapters module not available")
-        return True
+        assert True, "Module not available, skipping"
+        return
     
     try:
         DockerAdapter = container_adapters_module.DockerAdapter
@@ -154,9 +157,10 @@ def test_container_adapters():
         print(f"    Containerd containers found: {len(containerd_containers)}")
         
         print("\n✅ Container adapters test PASSED")
-        return True
+        assert True
     except Exception as e:
         print(f"[⚠️] Container adapter test: {e}")
+        assert True, f"Non-critical: {e}"
         return True
 
 
@@ -168,16 +172,17 @@ def test_container_checkpoint():
     
     if not container_checkpoint_module:
         print("[⚠️] Container checkpoint module not available")
-        return True
+        assert True, "Module not available, skipping"
+        return
     
     try:
         ContainerCheckpointEngine = container_checkpoint_module.ContainerCheckpointEngine
         engine = ContainerCheckpointEngine(snapshot_dir="./snapshots")
         print("\n✅ Container checkpoint engine ready")
-        return True
+        assert True
     except Exception as e:
         print(f"[⚠️] Container checkpoint test: {e}")
-        return True
+        assert True, f"Non-critical: {e}"
 
 
 def test_container_restore():
@@ -188,16 +193,17 @@ def test_container_restore():
     
     if not container_restore_module:
         print("[⚠️] Container restore module not available")
-        return True
+        assert True, "Module not available, skipping"
+        return
     
     try:
         ContainerRestoreEngine = container_restore_module.ContainerRestoreEngine
         engine = ContainerRestoreEngine(snapshot_dir="./snapshots")
         print("\n✅ Container restore engine ready")
-        return True
+        assert True
     except Exception as e:
         print(f"[⚠️] Container restore test: {e}")
-        return True
+        assert True, f"Non-critical: {e}"
 
 
 def main():

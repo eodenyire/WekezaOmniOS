@@ -1,6 +1,6 @@
 """
 WekezaOmniOS Android Runtime Adapter
-Prepares teleported processes for Android ART/Dalvik environments.
+Phase 7: Translates states for the Android Runtime (ART).
 """
 
 class AndroidAdapter:
@@ -23,3 +23,14 @@ class AndroidAdapter:
     def check_permissions(self):
         # Placeholder for Android permission validation
         pass
+
+    def translate_runtime(self, snapshot_metadata):
+        print("[Android Adapter] 🤖 Adjusting MilkApp for Android...")
+        
+        # 1. Permission Mapping: Ensure Android 'Camera' permission is active for barcode scanning
+        snapshot_metadata['permissions'].append("android.permission.CAMERA")
+        
+        # 2. Filesystem Mapping: Map to Android SD Card/Internal Storage
+        snapshot_metadata['env']['DATA_PATH'] = "/storage/emulated/0/MilkApp"
+        
+        return snapshot_metadata

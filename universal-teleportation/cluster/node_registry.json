@@ -12,7 +12,7 @@
                 "load": 0.1,
                 "memory_free_mb": 4096
             },
-            "last_seen": "2026-03-08T18:43:41.254125"
+            "last_seen": "2026-03-09T04:09:14.304779"
         },
         {
             "id": "phase3-local",
@@ -21,8 +21,9 @@
             "ip": "127.0.0.1",
             "role": "controller",
             "port": 8000,
-            "status": "active",
-            "metadata": {}
+            "status": "ONLINE",
+            "metadata": {},
+            "last_seen": "2026-03-09T04:09:14.305179"
         },
         {
             "id": "compute-node-01",
@@ -33,7 +34,7 @@
             "updated_at": "2026-03-08T17:32:55.951392+00:00",
             "metadata": {},
             "created_at": "2026-03-08T17:32:00.857684+00:00",
-            "last_seen": "2026-03-08T18:43:42.258021"
+            "last_seen": "2026-03-09T04:09:14.315826"
         },
         {
             "id": "compute-node-02",
@@ -44,7 +45,39 @@
             "updated_at": "2026-03-08T17:32:56.452615+00:00",
             "metadata": {},
             "created_at": "2026-03-08T17:32:00.876189+00:00",
-            "last_seen": "2026-03-08T18:43:43.261616"
+            "last_seen": "2026-03-09T04:09:14.322561"
+        },
+        {
+            "id": "ios-sim-local",
+            "name": "ios-sim-local",
+            "address": "127.0.0.1",
+            "ip": "127.0.0.1",
+            "role": "ios-runtime",
+            "port": 8000,
+            "status": "ONLINE",
+            "metadata": {},
+            "last_seen": "2026-03-09T04:09:14.325362"
+        },
+        {
+            "id": "ios-iphone",
+            "name": "ios-iphone",
+            "address": "192.168.1.150",
+            "ip": "192.168.1.150",
+            "role": "ios-runtime",
+            "port": 8000,
+            "status": "OFFLINE",
+            "metadata": {},
+            "last_seen": "2026-03-09T04:09:14.335960"
+        },
+        {
+            "id": "missing-bridge-node",
+            "name": "missing-bridge-node",
+            "address": "127.0.0.1",
+            "ip": "127.0.0.1",
+            "role": "cloud-runtime",
+            "port": 8000,
+            "status": "active",
+            "metadata": {}
         }
     ]
 }

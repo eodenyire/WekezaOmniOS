@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WekezaOmniOS Developer IDE</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg: #f6f4ee;
+      --bg-accent: #ece7dc;
+      --ink: #101a24;
+      --muted: #5f6a75;
+      --line: #cfd4d9;
+      --card: #fffdf8;
+      --primary: #0f766e;
+      --primary-strong: #0a5b55;
+      --danger: #b42318;
+      --ok: #127a3a;
+      --shadow: 0 14px 26px rgba(14, 24, 36, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1400px 600px at -10% -10%, #dcefe8 0%, transparent 70%),
+        radial-gradient(1200px 500px at 120% -20%, #efe7d4 0%, transparent 75%),
+        var(--bg);
+      font-family: "Space Grotesk", sans-serif;
+    }
+
+    .shell {
+      max-width: 1360px;
+      margin: 18px auto;
+      padding: 0 14px 16px;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      background: linear-gradient(120deg, #faf8f3 0%, #f0ece2 100%);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: -0.03em;
+    }
+
+    .sub {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toolbar {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto auto auto;
+      gap: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 290px 1fr 360px;
+      gap: 12px;
+      min-height: 72vh;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
+    }
+
+    .panel h2 {
+      margin: 0;
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #faf8f2;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .panel-body {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .mono {
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    input, select, button, textarea {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      color: var(--ink);
+      background: white;
+      font-family: inherit;
+    }
+
+    textarea {
+      font-family: "IBM Plex Mono", monospace;
+      resize: vertical;
+    }
+
+    button {
+      background: #f2f5f7;
+      cursor: pointer;
+      transition: all 180ms ease;
+      font-weight: 600;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: #9aabbc;
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #149b90, var(--primary));
+      color: #f7fffd;
+      border-color: #0f6a64;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(180deg, #0f8a80, var(--primary-strong));
+    }
+
+    .btn-danger {
+      background: #fbeaea;
+      color: var(--danger);
+      border-color: #efc7c4;
+    }
+
+    .tree {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 6px;
+      flex: 1;
+      overflow: auto;
+    }
+
+    .item {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 13px;
+    }
+
+    .item:hover { background: #f0f7f5; }
+
+    .item.dir { color: #0e4f87; font-weight: 500; }
+
+    .editor {
+      flex: 1;
+      min-height: 320px;
+      width: 100%;
+    }
+
+    .output {
+      flex: 1;
+      min-height: 180px;
+      background: #0f1b2a;
+      color: #e8f0ff;
+      border: 1px solid #2a3b4d;
+    }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+    .status {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .ok { color: var(--ok); }
+    .err { color: var(--danger); }
+
+    .bridge {
+      border: 1px dashed #99b0a8;
+      border-radius: 10px;
+      padding: 10px;
+      background: #f3faf8;
+      font-size: 13px;
+      color: #214a44;
+    }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    @media (max-width: 1120px) {
+      .grid { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <h1>Developer IDE</h1>
+      <div class="sub">Create files and folders, edit code, then run or compile across supported languages.</div>
+      <div class="toolbar">
+        <input id="pathInput" class="mono" value="." />
+        <button onclick="listFiles()">Refresh Tree</button>
+        <input id="newDirInput" class="mono" placeholder="new folder path" />
+        <button onclick="createDir()">Create Folder</button>
+        <input id="newFileInput" class="mono" placeholder="new file path" />
+        <button onclick="createFileBtn()">Create File</button>
+        <button class="btn-primary" onclick="saveFile()">Save Current File</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <section class="panel">
+        <h2>Workspace Tree</h2>
+        <div class="panel-body">
+          <div class="status mono" id="cwdLabel">path: .</div>
+          <div class="tree" id="tree"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Editor</h2>
+        <div class="panel-body">
+          <div class="row">
+            <input id="currentFile" class="mono" placeholder="select a file from tree" />
+            <button onclick="openFromPath()">Open Path</button>
+          </div>
+          <textarea id="editor" class="editor" spellcheck="false"></textarea>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Run / Compile</h2>
+        <div class="panel-body">
+          <div class="row">
+            <select id="language">
+              <option value="python">python</option>
+              <option value="javascript">javascript</option>
+              <option value="bash">bash</option>
+              <option value="c">c</option>
+              <option value="cpp">cpp</option>
+              <option value="java">java</option>
+            </select>
+            <input id="args" class="mono" placeholder="args (space-separated)" />
+          </div>
+          <div class="row">
+            <input id="timeout" type="number" min="1" max="120" value="15" />
+            <button class="btn-primary" onclick="runCode()">Run</button>
+          </div>
+          <div class="row-3">
+            <input id="deployAppName" placeholder="app name" value="developer-app" />
+            <select id="deployEnv">
+              <option value="preview">preview</option>
+              <option value="staging">staging</option>
+              <option value="production" selected>production</option>
+            </select>
+            <button class="btn-primary" onclick="deployCurrentFile()">Deploy / View Production</button>
+          </div>
+          <input id="deployProcessId" type="number" min="1" placeholder="optional process id for console prefill" />
+          <div class="bridge" id="deployBridge">
+            No deployment yet. Deploy a file, then jump to console teleportation.
+          </div>
+          <div class="actions">
+            <button onclick="openProduction()">Open Production URL</button>
+            <button onclick="openConsoleBridge()">Open Console Teleport</button>
+          </div>
+          <textarea id="output" class="output mono" readonly></textarea>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let lastDeployment = null;
+
+    function setStatus(text, ok = true) {
+      const el = $('cwdLabel');
+      el.textContent = text;
+      el.className = `status mono ${ok ? 'ok' : 'err'}`;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, options);
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { raw: text };
+      }
+      if (!response.ok) {
+        const msg = data.detail ? JSON.stringify(data.detail) : `HTTP ${response.status}`;
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    function renderTree(items) {
+      const tree = $('tree');
+      tree.innerHTML = '';
+      if (!items || items.length === 0) {
+        tree.innerHTML = '<div class="mono">(empty)</div>';
+        return;
+      }
+      for (const item of items) {
+        const btn = document.createElement('button');
+        btn.className = `item ${item.is_dir ? 'dir' : ''}`;
+        btn.innerHTML = `<span>${item.is_dir ? 'DIR' : 'FILE'}</span><span>${item.path}</span>`;
+        btn.onclick = () => {
+          if (item.is_dir) {
+            $('pathInput').value = item.path;
+            listFiles();
+          } else {
+            openFile(item.path);
+          }
+        };
+        tree.appendChild(btn);
+      }
+    }
+
+    async function listFiles() {
+      const path = $('pathInput').value.trim() || '.';
+      try {
+        const data = await api(`/developer/files/list?path=${encodeURIComponent(path)}`);
+        renderTree(data.items || []);
+        setStatus(`path: ${path}`);
+      } catch (err) {
+        setStatus(`error: ${err.message}`, false);
+      }
+    }
+
+    async function openFile(path) {
+      try {
+        const data = await api(`/developer/files/read?path=${encodeURIComponent(path)}`);
+        $('currentFile').value = data.path;
+        $('editor').value = data.content || '';
+        setStatus(`opened: ${data.path}`);
+      } catch (err) {
+        setStatus(`open failed: ${err.message}`, false);
+      }
+    }
+
+    async function openFromPath() {
+      const path = $('currentFile').value.trim();
+      if (!path) return;
+      await openFile(path);
+    }
+
+    async function saveFile() {
+      const path = $('currentFile').value.trim();
+      if (!path) {
+        setStatus('save failed: choose file path first', false);
+        return;
+      }
+      try {
+        await api('/developer/files/write', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path, content: $('editor').value })
+        });
+        setStatus(`saved: ${path}`);
+      } catch (err) {
+        setStatus(`save failed: ${err.message}`, false);
+      }
+    }
+
+    async function createFileBtn() {
+      const path = $('newFileInput').value.trim();
+      if (!path) return;
+      try {
+        await api('/developer/files/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path })
+        });
+        $('newFileInput').value = '';
+        setStatus(`created file: ${path}`);
+        await listFiles();
+      } catch (err) {
+        setStatus(`create file failed: ${err.message}`, false);
+      }
+    }
+
+    async function createDir() {
+      const path = $('newDirInput').value.trim();
+      if (!path) return;
+      try {
+        await api('/developer/files/create_dir', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path })
+        });
+        $('newDirInput').value = '';
+        setStatus(`created folder: ${path}`);
+        await listFiles();
+      } catch (err) {
+        setStatus(`create folder failed: ${err.message}`, false);
+      }
+    }
+
+    async function runCode() {
+      const code = $('editor').value;
+      const language = $('language').value;
+      const timeoutSeconds = Number($('timeout').value || '15');
+      const args = $('args').value.trim() ? $('args').value.trim().split(/\s+/) : [];
+
+      $('output').value = 'Running...';
+      try {
+        const data = await api('/developer/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ language, code, args, timeout_seconds: timeoutSeconds })
+        });
+
+        const lines = [];
+        lines.push(`status: ${data.status}`);
+        lines.push(`language: ${data.language}`);
+        lines.push(`exit_code: ${data.exit_code}`);
+        lines.push(`duration_ms: ${data.duration_ms}`);
+        if (data.command) lines.push(`command: ${JSON.stringify(data.command)}`);
+        if (data.compile_output) {
+          lines.push('\n=== compile_output ===');
+          lines.push(data.compile_output);
+        }
+        lines.push('\n=== stdout ===');
+        lines.push(data.stdout || '(empty)');
+        lines.push('\n=== stderr ===');
+        lines.push(data.stderr || '(empty)');
+        $('output').value = lines.join('\n');
+      } catch (err) {
+        $('output').value = `Run failed: ${err.message}`;
+      }
+    }
+
+    async function deployCurrentFile() {
+      const filePath = $('currentFile').value.trim();
+      if (!filePath) {
+        setStatus('deploy failed: open or select a file first', false);
+        return;
+      }
+
+      const appName = $('deployAppName').value.trim() || 'developer-app';
+      const environment = $('deployEnv').value;
+      const processIdRaw = $('deployProcessId').value.trim();
+      const processId = processIdRaw ? Number(processIdRaw) : null;
+
+      try {
+        const data = await api('/developer/deploy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            file_path: filePath,
+            app_name: appName,
+            environment,
+            process_id: Number.isFinite(processId) ? processId : null
+          })
+        });
+
+        lastDeployment = data;
+        $('deployBridge').innerHTML =
+          `<strong>Deployment ready</strong><br>` +
+          `id: <span class="mono">${data.deployment_id}</span><br>` +
+          `runtime: <span class="mono">${data.runtime}</span><br>` +
+          `process_id: <span class="mono">${data.process_id ?? 'n/a'}</span><br>` +
+          `production: <span class="mono">${data.production_url}</span><br>` +
+          `record: <span class="mono">${data.record_path}</span>`;
+
+        setStatus(`deployed: ${data.deployment_id}`);
+      } catch (err) {
+        setStatus(`deploy failed: ${err.message}`, false);
+      }
+    }
+
+    function openProduction() {
+      if (!lastDeployment) {
+        setStatus('no deployment available yet', false);
+        return;
+      }
+      window.open(lastDeployment.production_url, '_blank', 'noopener');
+    }
+
+    function openConsoleBridge() {
+      if (!lastDeployment) {
+        setStatus('no deployment available yet', false);
+        return;
+      }
+      window.location.href = lastDeployment.console_url;
+    }
+
+    window.onload = () => {
+      listFiles();
+    };
+  </script>
+</body>
+</html>

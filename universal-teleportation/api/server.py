@@ -5,7 +5,8 @@ Main entry point for the Teleportation Control Plane.
 
 import uvicorn
 from fastapi import FastAPI
-from routes import router
+from .routes import router
+from .ide_routes import router as ide_router
 
 app = FastAPI(
     title="WekezaOmniOS Universal Teleportation API",
@@ -19,6 +20,7 @@ app = FastAPI(
 
 # Modular route inclusion
 app.include_router(router)
+app.include_router(ide_router)
 
 @app.get("/", tags=["Health Check"])
 def root():
@@ -26,7 +28,7 @@ def root():
     return {
         "service": "WekezaOmniOS UAT API",
         "status": "active",
-        "phase": "3.0 - Container Runtime Integration"
+        "phase": "20.0 - Unified Cross-Platform Reality"
     }
 
 if __name__ == "__main__":

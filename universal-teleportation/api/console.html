@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WekezaOmniOS Teleport Console</title>
+  <style>
+    :root {
+      --bg: #0e1b2a;
+      --bg-soft: #13243a;
+      --card: #172c45;
+      --ink: #e8f1ff;
+      --muted: #a8bddb;
+      --ok: #34d399;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --accent: #60a5fa;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 700px at 10% -10%, #244061 0%, var(--bg) 60%);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 16px 40px;
+    }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    .sub { color: var(--muted); margin-bottom: 20px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.2);
+    }
+    .card h2 { margin: 2px 0 10px; font-size: 18px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 4px; }
+    input, select, button, textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: var(--bg-soft);
+      color: var(--ink);
+      padding: 10px;
+      font-size: 14px;
+    }
+    textarea { min-height: 120px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .btn {
+      background: linear-gradient(180deg, #4f8fe5, #346ec3);
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    .btn.secondary { background: #2a4668; }
+    .btn.warn { background: #94610a; }
+    .pill {
+      display: inline-block;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 12px;
+      margin-right: 6px;
+      color: var(--muted);
+    }
+    .ok { color: var(--ok); }
+    .warnText { color: var(--warn); }
+    .bad { color: var(--bad); }
+    .targets button { margin-top: 8px; }
+    .footer { color: var(--muted); margin-top: 16px; font-size: 13px; }
+    .hint {
+      border: 1px dashed rgba(255,255,255,0.25);
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(255,255,255,0.04);
+    }
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Teleport Console</h1>
+    <div class="sub">Develop once, click to teleport your app process across Windows, Android, iOS, and cloud nodes.</div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>1) Register Target Node</h2>
+        <div class="row">
+          <div>
+            <label>Node ID</label>
+            <input id="nodeId" placeholder="windows-devbox" />
+          </div>
+          <div>
+            <label>Address</label>
+            <input id="nodeAddress" placeholder="192.168.1.100" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Role</label>
+            <select id="nodeRole">
+              <option value="windows-runtime">windows-runtime</option>
+              <option value="ios-runtime">ios-runtime</option>
+              <option value="android-runtime">android-runtime</option>
+              <option value="cloud-runtime">cloud-runtime</option>
+              <option value="worker">worker</option>
+            </select>
+          </div>
+          <div>
+            <label>Port</label>
+            <input id="nodePort" value="8000" />
+          </div>
+        </div>
+        <button class="btn" onclick="registerNode()">Register Node</button>
+        <button class="btn secondary" onclick="loadNodes()">Refresh Nodes</button>
+      </section>
+
+      <section class="card">
+        <h2>2) One-Click Teleport</h2>
+        <label>Process ID (the app you are running)</label>
+        <input id="pid" placeholder="e.g. 20659" />
+        <label>Target Node</label>
+        <select id="targetNode"></select>
+        <label>Transfer Protocol</label>
+        <select id="protocol">
+          <option value="auto">auto</option>
+          <option value="ssh">ssh</option>
+          <option value="local">local</option>
+        </select>
+        <button class="btn" onclick="teleportNow()">Teleport Now</button>
+        <div class="hint" id="bridgeHint" style="display:none;">
+          Suggested target node from Developer IDE is not registered yet.
+          <button class="btn secondary" onclick="autoRegisterSuggestedNode()">Auto-register Suggested Node</button>
+        </div>
+        <div class="footer">
+          This button runs capture + snapshot + transfer + restore orchestration using <code>/teleport/remote</code>.
+        </div>
+      </section>
+
+      <section class="card targets">
+        <h2>Quick Target Presets</h2>
+        <span class="pill">Windows</span>
+        <span class="pill">iOS</span>
+        <span class="pill">Android</span>
+        <span class="pill">Cloud</span>
+        <button class="btn secondary" onclick="preset('windows-devbox','192.168.1.100','windows-runtime')">Use Windows Preset</button>
+        <button class="btn secondary" onclick="preset('ios-iphone','192.168.1.150','ios-runtime')">Use iOS Preset</button>
+        <button class="btn secondary" onclick="preset('android-phone','192.168.1.160','android-runtime')">Use Android Preset</button>
+        <button class="btn warn" onclick="clearNodes()">Clear All Nodes</button>
+      </section>
+
+      <section class="card" style="grid-column: 1/-1;">
+        <h2>Console Output</h2>
+        <textarea id="output" readonly></textarea>
+      </section>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section class="card">
+      <h2>Console Log</h2>
+      <textarea id="log" readonly></textarea>
+    </section>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const bridge = {
+      deploymentId: null,
+      app: null,
+      runtime: null,
+      targetRole: null,
+      targetOs: null,
+      targetNodeId: null,
+      processId: null,
+    };
+
+    const log = (msg, type = 'info') => {
+      const time = new Date().toLocaleTimeString();
+      const line = `[${time}] ${msg}\n`;
+      $('log').value = line + $('log').value;
+      console.log(msg);
+    };
+
+    const preset = (id, ip, role) => {
+      $('nodeId').value = id;
+      $('nodeAddress').value = ip;
+      $('nodeRole').value = role;
+      log(`Preset loaded: ${id} (${role})`);
+    };
+
+    const clearNodes = async () => {
+      // This is a mock for now, would need a /nodes/clear endpoint
+      localStorage.removeItem('wekeza_nodes');
+      log('All nodes cleared from local storage.');
+      loadNodes();
+    };
+
+    const loadNodes = async () => {
+      try {
+        const response = await fetch('/nodes');
+        if (!response.ok) throw new Error(`API returned ${response.status}`);
+        const data = await response.json();
+
+        // FIX: The API returns { nodes: [...] }, not just [...]
+        const nodes = data.nodes || [];
+
+        const select = $('targetNode');
+        select.innerHTML = '';
+        if (nodes.length === 0) {
+          select.innerHTML = '<option>No nodes registered</option>';
+          if (bridge.targetNodeId) {
+            $('bridgeHint').style.display = 'block';
+          }
+        } else {
+          $('bridgeHint').style.display = 'none';
+          nodes.forEach(node => {
+            const option = document.createElement('option');
+            option.value = node.node_id;
+            option.textContent = `${node.node_id} (${node.address} - ${node.role})`;
+            select.appendChild(option);
+          });
+
+          // Bridge behavior: prefer exact target node id, else first role match.
+          if (bridge.targetNodeId) {
+            const exact = nodes.find((n) => n.node_id === bridge.targetNodeId);
+            if (exact) {
+              select.value = exact.node_id;
+            } else {
+              $('bridgeHint').style.display = 'block';
+            }
+          }
+
+          if (!select.value || select.value === 'No nodes registered') {
+            const roleToMatch = $('nodeRole').value;
+            const byRole = nodes.find((n) => n.role === roleToMatch);
+            if (byRole) {
+              select.value = byRole.node_id;
+            }
+          }
+        }
+        log(`Found ${nodes.length} registered nodes.`);
+      } catch (error) {
+        log(`Load nodes failed: ${error.message}`, 'bad');
+      }
+    };
+
+    const autoRegisterSuggestedNode = async () => {
+      if (!bridge.targetNodeId) {
+        log('No suggested target node was provided.', 'bad');
+        return;
+      }
+
+      const nodeId = bridge.targetNodeId;
+      const role = bridge.targetRole || 'cloud-runtime';
+      const address = '127.0.0.1';
+      const port = 8000;
+
+      try {
+        const response = await fetch('/nodes/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ node_id: nodeId, address, role, port }),
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || `API returned ${response.status}`);
+        }
+        const result = await response.json();
+        $('bridgeHint').style.display = 'none';
+        log(`Auto-registered suggested node: ${result.node.node_id} (${role})`);
+        loadNodes();
+      } catch (error) {
+        log(`Auto-registration failed: ${error.message}`, 'bad');
+      }
+    };
+
+    const registerNode = async () => {
+      const nodeId = $('nodeId').value;
+      const address = $('nodeAddress').value;
+      const role = $('nodeRole').value;
+      const port = parseInt($('nodePort').value, 10);
+
+      if (!nodeId || !address) {
+        log('Node ID and Address are required.', 'bad');
+        return;
+      }
+
+      try {
+        const response = await fetch('/nodes/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ node_id: nodeId, address, role, port }),
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || `API returned ${response.status}`);
+        }
+        const result = await response.json();
+        log(`Node registered: ${result.node.node_id} @ ${result.node.address}`);
+        loadNodes();
+      } catch (error) {
+        log(`Registration failed: ${error.message}`, 'bad');
+      }
+    };
+
+    const teleportNow = async () => {
+      const pid = parseInt($('pid').value, 10);
+      const targetNodeId = $('targetNode').value;
+      const protocol = $('protocol').value;
+
+      // Find the selected node to get its OS
+      const targetNode = /* logic to get node details, for now we guess */;
+      const targetOs = bridge.targetOs || $('nodeRole').value.split('-')[0];
+
+      if (!pid || !targetNodeId) {
+        log('Process ID and Target Node are required.', 'bad');
+        return;
+      }
+
+      log(`Initiating teleport of PID ${pid} to ${targetNodeId} via ${protocol}...`);
+
+      try {
+        const response = await fetch('/teleport/remote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            process_id: pid,
+            target_node_id: targetNodeId,
+            target_os: targetOs, // Pass the target OS
+            protocol: protocol,
+          }),
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || `API returned ${response.status}`);
+        }
+        const result = await response.json();
+        log(`Teleport successful! Tracking ID: ${result.tracking_id}`);
+      } catch (error) {
+        log(`Teleport failed: ${error.message}`, 'bad');
+      }
+    };
+
+    // Initial load
+    window.onload = () => {
+      log('Console ready.');
+      const params = new URLSearchParams(window.location.search);
+      bridge.deploymentId = params.get('deployment_id');
+      bridge.app = params.get('app');
+      bridge.runtime = params.get('runtime');
+      bridge.processId = params.get('process_id');
+      bridge.targetRole = params.get('target_role');
+      bridge.targetOs = params.get('target_os');
+      bridge.targetNodeId = params.get('target_node_id');
+
+      if (bridge.deploymentId || bridge.app || bridge.runtime) {
+        log(`Bridge from Developer IDE: deployment=${bridge.deploymentId || 'n/a'}, app=${bridge.app || 'n/a'}, runtime=${bridge.runtime || 'n/a'}`);
+        if (bridge.targetRole) {
+          $('nodeRole').value = bridge.targetRole;
+        }
+        if (bridge.targetNodeId) {
+          $('nodeId').value = bridge.targetNodeId;
+        }
+        if (bridge.processId) {
+          $('pid').value = bridge.processId;
+        }
+        if (bridge.app) {
+          $('pid').placeholder = `PID for ${bridge.app}`;
+        }
+      }
+      loadNodes();
+    };
+  </script>
+</body>
+</html>

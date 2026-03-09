@@ -5,7 +5,8 @@ import os
 import sys
 import datetime
 from fastapi import APIRouter, HTTPException
-from models import (
+from fastapi.responses import HTMLResponse
+from .models import (
     TeleportRequest,
     TeleportResponse,
     CaptureRequest,
@@ -56,6 +57,17 @@ NodeController = node_controller_module.NodeController
 TeleportController = teleport_controller_module.TeleportController
 
 router = APIRouter()
+
+
+@router.get("/console", response_class=HTMLResponse, tags=["Console"])
+def teleport_console():
+    """Serve a click-based teleportation console for developers and operators."""
+    console_path = os.path.join(CURRENT_DIR, "console.html")
+    try:
+        with open(console_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Console UI not found")
 
 
 @router.get("/status", response_model=TeleportStatus, tags=["System"])
@@ -186,6 +198,7 @@ def teleport_remote(request: RemoteTeleportRequest):
         result = controller.teleport_remote(
             process_id=request.process_id,
             target_node_id=request.target_node_id,
+            target_os=request.target_os,
             protocol=request.protocol,
         )
         return RemoteTeleportResponse(
