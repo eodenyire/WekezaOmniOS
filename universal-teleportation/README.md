@@ -10,6 +10,16 @@
 
 The **Universal Application Teleportation (UAT)** system is a stateful deployment fabric designed to bridge the gap between development and production. It provides a "Magic Button" that allows a developer to move a living, stateful application session from a primary environment (e.g., Windows) into any other target environment (**iOS, Android, Ubuntu, Windows Phone**) instantly.
 
+## Documentation Map
+
+- Consolidated UAT docs index: `docs/INDEX.md`
+- Existing technical architecture docs: `docs/`
+- Planning docs: `docs/planning/`
+- Progress and completion reports: `docs/reports/`
+- Validation checks: `docs/checks/`
+- Product and architecture specs: `docs/specs/`
+- Vision and proposal material: `docs/vision/`
+
 Instead of stopping your work to rebuild and re-deploy, you move the **living state**. If you are halfway through a milk-collection entry for a dairy farmer on your PC, you click "Teleport," and that exact entry screen—with all form data and memory intact—appears on the target mobile device or server.
 
 ---

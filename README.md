@@ -82,6 +82,12 @@ If you are new to the project, use this order:
 2. Read the `README.md` inside each major folder for the responsibilities of that subsystem.
 3. Dive into `universal-teleportation/` if you want the most complete and deeply implemented track.
 
+## Documentation Navigation
+
+- Repo documentation hub: `docs/README.md`
+- Folder ownership and placement rules: `docs/REPO_STRUCTURE.md`
+- Universal Teleportation document map: `universal-teleportation/docs/INDEX.md`
+
 ## Current Position
 
 The repository began with three OmniOS implementation directions, but it now clearly contains a fourth: Universal Teleportation. The root structure and documentation should be read as a four-track OmniOS research platform, not a three-track one.
