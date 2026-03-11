@@ -1,0 +1,24 @@
+{
+    "directory": "phase2_test",
+    "path": "/workspaces/WekezaOmniOS/snapshots/phase2_test",
+    "size_bytes": 6794,
+    "files": [
+        {
+            "name": "test_snapshot_transferred.tar.gz",
+            "size_bytes": 3000,
+            "checksum_sha256": "87d7a2b2bb79d93f2113a00da930288e241a52e2f76b3e28acb8389a2278c340"
+        },
+        {
+            "name": "manifest.json",
+            "size_bytes": 794,
+            "checksum_sha256": "72e9c972d487b068c4e7055633e76a31651899c5b77b8a0bf00f130e0bda4e7a"
+        },
+        {
+            "name": "test_snapshot.tar.gz",
+            "size_bytes": 3000,
+            "checksum_sha256": "87d7a2b2bb79d93f2113a00da930288e241a52e2f76b3e28acb8389a2278c340"
+        }
+    ],
+    "timestamp": 1773067220.6727552,
+    "additional_info": {}
+}

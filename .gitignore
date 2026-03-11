@@ -1,0 +1,11 @@
+# Python virtual environment
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Temp runtime files
+temp/*.pid
+
+# VS Code
+.vscode/
