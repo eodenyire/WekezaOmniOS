@@ -3,11 +3,11 @@
     "node_id": "linux-01",
     "node_type": "linux",
     "address": "10.0.0.1",
-    "status": "idle",
+    "status": "active",
     "cpu_cores": 8,
     "ram_gb": 16,
-    "active_sessions": 0,
-    "created_at": "2026-04-14T07:55:33.509989Z"
+    "active_sessions": 1,
+    "created_at": "2026-04-14T12:35:34.420865Z"
   },
   {
     "node_id": "win-01",
@@ -17,7 +17,7 @@
     "cpu_cores": 8,
     "ram_gb": 16,
     "active_sessions": 0,
-    "created_at": "2026-04-14T07:55:33.510003Z"
+    "created_at": "2026-04-14T12:35:34.420883Z"
   },
   {
     "node_id": "android-01",
@@ -27,7 +27,7 @@
     "cpu_cores": 4,
     "ram_gb": 8,
     "active_sessions": 0,
-    "created_at": "2026-04-14T07:55:33.510008Z"
+    "created_at": "2026-04-14T12:35:34.420889Z"
   },
   {
     "node_id": "test-linux",
@@ -37,6 +37,46 @@
     "cpu_cores": 4,
     "ram_gb": 8,
     "active_sessions": 0,
-    "created_at": "2026-04-14T07:55:33.522576Z"
+    "created_at": "2026-04-14T12:35:34.420893Z"
+  },
+  {
+    "node_id": "linux-welcome-node",
+    "node_type": "linux",
+    "address": "10.0.0.10",
+    "status": "idle",
+    "cpu_cores": 4,
+    "ram_gb": 8,
+    "active_sessions": 0,
+    "created_at": "2026-04-14T12:35:40.689422Z"
+  },
+  {
+    "node_id": "linux-node-01",
+    "node_type": "linux",
+    "address": "10.0.0.1",
+    "status": "idle",
+    "cpu_cores": 8,
+    "ram_gb": 16,
+    "active_sessions": 0,
+    "created_at": "2026-04-14T12:35:43.901488Z"
+  },
+  {
+    "node_id": "windows-node-01",
+    "node_type": "windows",
+    "address": "10.0.0.2",
+    "status": "idle",
+    "cpu_cores": 8,
+    "ram_gb": 16,
+    "active_sessions": 0,
+    "created_at": "2026-04-14T12:35:44.972929Z"
+  },
+  {
+    "node_id": "android-emu-01",
+    "node_type": "android-emulator",
+    "address": "10.0.0.3",
+    "status": "idle",
+    "cpu_cores": 4,
+    "ram_gb": 8,
+    "active_sessions": 0,
+    "created_at": "2026-04-14T12:35:45.457395Z"
   }
 ]
