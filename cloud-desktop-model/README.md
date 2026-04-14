@@ -69,6 +69,24 @@ The API Gateway will start on **port 8080**.
 | http://localhost:8080/redoc | ReDoc API docs |
 | http://localhost:8080/dashboard | Web dashboard (login + full UI) |
 
+## End-to-End Journey
+
+An automated end-to-end script walks through the entire system journey —
+registering users, nodes, launching OS sessions, managing workspaces, and
+monitoring the cluster — while capturing a screenshot at each step.
+
+```bash
+# Install extra deps (playwright + requests) then install the Chromium browser
+pip install -r requirements.txt
+playwright install chromium
+
+# Run the journey (starts the server automatically)
+python e2e_journey.py
+```
+
+All screenshots are saved to **`screenshots/`** inside this folder.  
+See [`screenshots/README.md`](screenshots/README.md) for the full step-by-step visual walkthrough (30 screenshots).
+
 ## Typical Workflow
 
 1. **Register + login** via `/auth/register` and `/auth/login` to get a bearer token.
