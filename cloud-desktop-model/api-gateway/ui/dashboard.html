@@ -72,6 +72,43 @@
     }
     #loginPanel .btn { width: 100%; padding: 10px; font-size: 1rem; }
     code { background: #1f2937; border-radius: 3px; padding: 1px 5px; font-size: 0.85rem; color: #a8d8f0; }
+
+    /* ---- OS-Picker Welcome Screen ---- */
+    #welcomeScreen {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 40px 20px;
+    }
+    #welcomeScreen h2 {
+      font-size: 1.6rem; color: #58a6ff; margin-bottom: 8px; text-align: center;
+    }
+    #welcomeScreen p {
+      color: #8b949e; margin-bottom: 36px; text-align: center; font-size: 0.95rem;
+    }
+    .os-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 20px; max-width: 900px; width: 100%;
+    }
+    .os-card {
+      background: #161b22; border: 1px solid #30363d; border-radius: 12px;
+      padding: 28px 16px 20px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .os-card:hover {
+      border-color: #58a6ff; transform: translateY(-4px);
+      box-shadow: 0 6px 24px rgba(88,166,255,0.18);
+    }
+    .os-card .os-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+    .os-card .os-name { font-size: 0.9rem; font-weight: 600; color: #e6edf3; }
+    .os-card .os-profile { font-size: 0.75rem; color: #8b949e; margin-top: 4px; }
+    .os-card.launching { border-color: #3fb950; opacity: 0.75; pointer-events: none; }
+    #welcomeSkip {
+      margin-top: 32px; font-size: 0.85rem; color: #8b949e;
+    }
+    #welcomeSkip a { color: #58a6ff; cursor: pointer; text-decoration: none; }
+    #welcomeSkip a:hover { text-decoration: underline; }
+    #welcomeMsg { margin-top: 16px; max-width: 500px; text-align: center; }
   </style>
 </head>
 <body>
@@ -92,6 +129,61 @@
     <button class="btn btn-info" style="width:100%" onclick="doRegister()">Create Account</button>
   </div>
   <div id="loginMsg" class="msg"></div>
+</div>
+
+<!-- ===================== WELCOME / OS-PICKER ===================== -->
+<div id="welcomeScreen" style="display:none">
+  <h2>👋 Welcome, <span id="welcomeUser"></span>!</h2>
+  <p>Choose an operating system to launch your cloud desktop session.</p>
+  <div class="os-grid">
+    <div class="os-card" onclick="pickOS('ubuntu-22.04',this)">
+      <span class="os-icon">🐧</span>
+      <div class="os-name">Ubuntu</div>
+      <div class="os-profile">22.04 LTS</div>
+    </div>
+    <div class="os-card" onclick="pickOS('debian-12',this)">
+      <span class="os-icon">🌀</span>
+      <div class="os-name">Debian</div>
+      <div class="os-profile">12 (Bookworm)</div>
+    </div>
+    <div class="os-card" onclick="pickOS('fedora-39',this)">
+      <span class="os-icon">🎩</span>
+      <div class="os-name">Fedora</div>
+      <div class="os-profile">39</div>
+    </div>
+    <div class="os-card" onclick="pickOS('arch-latest',this)">
+      <span class="os-icon">🏹</span>
+      <div class="os-name">Arch Linux</div>
+      <div class="os-profile">Latest</div>
+    </div>
+    <div class="os-card" onclick="pickOS('windows-11',this)">
+      <span class="os-icon">🪟</span>
+      <div class="os-name">Windows 11</div>
+      <div class="os-profile">Professional</div>
+    </div>
+    <div class="os-card" onclick="pickOS('windows-10',this)">
+      <span class="os-icon">🪟</span>
+      <div class="os-name">Windows 10</div>
+      <div class="os-profile">Professional</div>
+    </div>
+    <div class="os-card" onclick="pickOS('windows-server-2022',this)">
+      <span class="os-icon">🖧</span>
+      <div class="os-name">Windows Server</div>
+      <div class="os-profile">2022</div>
+    </div>
+    <div class="os-card" onclick="pickOS('android-14',this)">
+      <span class="os-icon">🤖</span>
+      <div class="os-name">Android 14</div>
+      <div class="os-profile">Emulator</div>
+    </div>
+    <div class="os-card" onclick="pickOS('android-13',this)">
+      <span class="os-icon">🤖</span>
+      <div class="os-name">Android 13</div>
+      <div class="os-profile">Emulator</div>
+    </div>
+  </div>
+  <div id="welcomeSkip">Or <a href="#" onclick="skipWelcome(event)">go to the full dashboard →</a></div>
+  <div id="welcomeMsg" class="msg"></div>
 </div>
 
 <!-- ===================== MAIN APP ===================== -->
@@ -308,12 +400,46 @@
       localStorage.setItem('cdm_uid', USER_ID);
       localStorage.setItem('cdm_uname', USERNAME);
       document.getElementById('loginPanel').style.display = 'none';
-      document.getElementById('appShell').style.display = 'block';
-      document.getElementById('headerUser').textContent = '👤 ' + USERNAME;
-      loadOverview();
+      document.getElementById('welcomeUser').textContent = USERNAME;
+      document.getElementById('welcomeScreen').style.display = 'flex';
     } else {
       msg('loginMsg', d.detail || 'Login failed', false);
     }
+  }
+
+  async function pickOS(osProfile, card) {
+    const nameEl = card.querySelector('.os-name');
+    const originalName = nameEl.textContent;
+    card.classList.add('launching');
+    nameEl.textContent = originalName + ' …';
+    const welcomeMsg = document.getElementById('welcomeMsg');
+    welcomeMsg.className = 'msg';
+    welcomeMsg.style.display = 'none';
+    const d = await apiFetch('/sessions/launch', 'POST', {
+      user_id: USER_ID,
+      os_profile: osProfile,
+      cpu_cores: 2,
+      ram_gb: 4,
+    });
+    if (d.session_id) {
+      skipWelcome();
+      showTab('tabSessions', document.querySelector('nav a[onclick*="tabSessions"]'));
+      loadSessions();
+    } else {
+      card.classList.remove('launching');
+      nameEl.textContent = originalName;
+      welcomeMsg.className = 'msg err';
+      welcomeMsg.textContent = d.detail || 'Failed to launch session';
+      welcomeMsg.style.display = 'block';
+    }
+  }
+
+  function skipWelcome(event) {
+    if (event) event.preventDefault();
+    document.getElementById('welcomeScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'block';
+    document.getElementById('headerUser').textContent = '👤 ' + USERNAME;
+    loadOverview();
   }
 
   async function doLogout() {
@@ -472,9 +598,8 @@
   // Auto-login if token exists
   if (TOKEN) {
     document.getElementById('loginPanel').style.display = 'none';
-    document.getElementById('appShell').style.display = 'block';
-    document.getElementById('headerUser').textContent = '👤 ' + (USERNAME || 'user');
-    loadOverview();
+    document.getElementById('welcomeUser').textContent = USERNAME || 'user';
+    document.getElementById('welcomeScreen').style.display = 'flex';
   }
 </script>
 </body>

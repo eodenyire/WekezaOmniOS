@@ -13,25 +13,31 @@ Steps covered
  2.  Dashboard login page
  3.  Register a new user
  4.  Login and receive bearer token
- 5.  Dashboard overview (post-login)
- 6.  Register a Linux compute node
- 7.  Register a Windows compute node
- 8.  Register an Android Emulator node
- 9.  Cluster tab — list registered nodes
-10.  Launch an Ubuntu OS session
-11.  Launch a Windows 11 OS session
-12.  Sessions tab — active sessions
-13.  Create a developer workspace
-14.  Workspaces tab — list workspaces
-15.  Snapshot the workspace
-16.  Clone the workspace
-17.  Workspaces tab — after clone
-18.  Cluster health check
-19.  Resource usage summary
-20.  Terminate the first OS session
-21.  Developer Tools tab — API explorer
-22.  Swagger UI (/docs)
-23.  ReDoc UI (/redoc)
+ 5.  Fill login credentials
+ 6.  Welcome screen — OS-picker cards (post-login)
+ 7.  Sessions tab after clicking the Ubuntu card on the welcome screen
+ 8.  Dashboard overview (post-welcome)
+ 9.  Register a Linux compute node
+10.  Register a Windows compute node
+11.  Register an Android Emulator node
+12.  Cluster tab — list registered nodes
+13.  Launch an Ubuntu OS session
+14.  Launch a Windows 11 OS session
+15.  Sessions tab — active sessions
+16.  Session detail JSON
+17.  Create a developer workspace
+18.  Workspaces tab — list workspaces
+19.  Snapshot the workspace
+20.  Clone the workspace
+21.  Workspaces tab — after clone
+22.  Cluster health check
+23.  Resource usage summary
+24.  Dev Tools — /status result
+25.  Terminate the first OS session (before)
+26.  Terminate the first OS session (after)
+27.  Swagger UI (/docs)
+28.  ReDoc UI (/redoc)
+29.  Final dashboard overview (post journey)
 
 Usage
 -----
@@ -98,6 +104,22 @@ def wait_for_server(timeout: int = 30) -> None:
             pass
         time.sleep(0.5)
     raise RuntimeError("Server did not start within timeout")
+
+
+def navigate_to_dashboard(page: Page) -> None:
+    """
+    Navigate to the dashboard and bypass the welcome screen when it appears.
+
+    After the initial OS-picker demo, every reload that finds a stored token
+    will show #welcomeScreen (auto-login path).  This helper detects that and
+    calls skipWelcome() so the rest of the journey can operate on #appShell.
+    """
+    page.goto(f"{BASE_URL}/dashboard")
+    page.wait_for_load_state("networkidle")
+    if page.is_visible("#welcomeScreen"):
+        page.evaluate("skipWelcome()")
+    page.wait_for_selector("#appShell", state="visible", timeout=8_000)
+    page.wait_for_timeout(400)
 
 
 def api(method: str, path: str, body: dict = None, token: str = None) -> dict:
@@ -193,23 +215,48 @@ def run_journey(page: Page) -> None:
     screenshot(page, "login_credentials_filled")
 
     # ------------------------------------------------------------------
-    # Step 6 – Sign in → dashboard overview
+    # Step 6 – Sign in → welcome screen (OS-picker)
     # ------------------------------------------------------------------
     page.click("text=Sign In")
-    page.wait_for_selector("#appShell", state="visible", timeout=8_000)
+    page.wait_for_selector("#welcomeScreen", state="visible", timeout=8_000)
     page.wait_for_timeout(800)
-    screenshot(page, "dashboard_overview_post_login")
+    screenshot(page, "welcome_screen_os_picker")
 
     # ------------------------------------------------------------------
-    # Use the REST API directly to get a token for subsequent API steps.
-    # The UI already has it in localStorage; we re-fetch for our script.
+    # Fetch bearer token via API (needed before the OS-card click so we
+    # can register a compute node for the session launch to succeed).
     # ------------------------------------------------------------------
     token_resp = api("POST", "/auth/login", {"username": "alice", "password": "s3cr3t!!"})
     token = token_resp.get("access_token", "")
     print(f"       token obtained: {token[:16]}…")
 
+    # Register a Linux node so the Ubuntu welcome-screen pick succeeds.
+    api("POST", "/cluster/nodes", {
+        "node_id": "linux-welcome-node",
+        "node_type": "linux",
+        "address": "10.0.0.10",
+        "cpu_cores": 4,
+        "ram_gb": 8,
+    }, token=token)
+
     # ------------------------------------------------------------------
-    # Step 7 – Navigate to Cluster tab and register a Linux node
+    # Step 7 – Click Ubuntu card → sessions tab
+    # ------------------------------------------------------------------
+    page.locator(".os-card", has_text="Ubuntu").first.click()
+    page.wait_for_selector("#appShell", state="visible", timeout=15_000)
+    page.wait_for_selector("#tabSessions", state="visible", timeout=8_000)
+    page.wait_for_timeout(800)
+    screenshot(page, "sessions_tab_after_ubuntu_pick")
+
+    # ------------------------------------------------------------------
+    # Step 8 – Overview tab (matches old step 6)
+    # ------------------------------------------------------------------
+    page.click("text=📊 Overview")
+    page.wait_for_timeout(800)
+    screenshot(page, "dashboard_overview_post_login")
+
+    # ------------------------------------------------------------------
+    # Step 9 – Navigate to Cluster tab and register a Linux node
     # ------------------------------------------------------------------
     page.click("text=🖧 Cluster")
     page.wait_for_selector("#tabCluster", state="visible")
@@ -225,7 +272,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "cluster_linux_node_registered")
 
     # ------------------------------------------------------------------
-    # Step 8 – Register a Windows node (via API, then refresh UI)
+    # Step 10 – Register a Windows node (via API, then refresh UI)
     # ------------------------------------------------------------------
     api("POST", "/cluster/nodes", {
         "node_id": "windows-node-01",
@@ -240,7 +287,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "cluster_windows_node_registered_api")
 
     # ------------------------------------------------------------------
-    # Step 9 – Register Android Emulator node (via API)
+    # Step 11 – Register Android Emulator node (via API)
     # ------------------------------------------------------------------
     api("POST", "/cluster/nodes", {
         "node_id": "android-emu-01",
@@ -256,7 +303,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "cluster_all_nodes_listed")
 
     # ------------------------------------------------------------------
-    # Step 10 – Launch an Ubuntu OS session (via UI)
+    # Step 13 – Launch an Ubuntu OS session (via UI)
     # ------------------------------------------------------------------
     page.click("text=🚀 Sessions")
     page.wait_for_selector("#tabSessions", state="visible")
@@ -271,7 +318,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "sessions_ubuntu_session_launched")
 
     # ------------------------------------------------------------------
-    # Step 11 – Launch a Windows 11 session (via API)
+    # Step 14 – Launch a Windows 11 session (via API)
     # ------------------------------------------------------------------
     win_sess = api("POST", "/sessions/launch", {
         "user_id": "alice",
@@ -291,7 +338,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "sessions_active_list")
 
     # ------------------------------------------------------------------
-    # Step 12 – Get first session id from the list via API
+    # Step 16 – Get first session id from the list via API
     # ------------------------------------------------------------------
     sessions_resp = api("GET", "/sessions", token=token)
     sessions = sessions_resp.get("sessions", [])
@@ -302,12 +349,10 @@ def run_journey(page: Page) -> None:
     page.goto(f"{BASE_URL}/sessions/{first_session_id}",
               wait_until="networkidle")
     screenshot(page, "session_detail_json")
-    page.goto(f"{BASE_URL}/dashboard")
-    page.wait_for_selector("#appShell", state="visible", timeout=8_000)
-    page.wait_for_timeout(400)
+    navigate_to_dashboard(page)
 
     # ------------------------------------------------------------------
-    # Step 13 – Create a developer workspace (via UI)
+    # Step 17 – Create a developer workspace (via UI)
     # ------------------------------------------------------------------
     page.click("text=🗂️ Workspaces")
     page.wait_for_selector("#tabWorkspaces", state="visible")
@@ -328,7 +373,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "workspaces_list")
 
     # ------------------------------------------------------------------
-    # Step 14 – Snapshot the workspace (via API)
+    # Step 19 – Snapshot the workspace (via API)
     # ------------------------------------------------------------------
     ws_resp = api("GET", "/workspaces", token=token)
     workspaces = ws_resp.get("workspaces", [])
@@ -346,7 +391,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "workspace_detail_after_snapshot")
 
     # ------------------------------------------------------------------
-    # Step 15 – Clone the workspace (via API)
+    # Step 20 – Clone the workspace (via API)
     # ------------------------------------------------------------------
     clone_resp = api("POST", "/workspaces/clone", {
         "source_workspace_id": workspace_id,
@@ -360,8 +405,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "workspace_clone_detail")
 
     # Back to dashboard workspaces tab
-    page.goto(f"{BASE_URL}/dashboard")
-    page.wait_for_selector("#appShell", state="visible", timeout=8_000)
+    navigate_to_dashboard(page)
     page.click("text=🗂️ Workspaces")
     page.wait_for_selector("#tabWorkspaces", state="visible")
     page.locator("#tabWorkspaces button:has-text('Refresh')").click()
@@ -369,7 +413,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "workspaces_list_after_clone")
 
     # ------------------------------------------------------------------
-    # Step 16 – Cluster health check (JSON via browser)
+    # Step 22 – Cluster health check (JSON via browser)
     # ------------------------------------------------------------------
     page.goto(
         f"{BASE_URL}/cluster/health",
@@ -379,8 +423,7 @@ def run_journey(page: Page) -> None:
     # Inject token via Authorization header is impossible from plain browser GET,
     # so we hit the endpoint via the API and display the result on the page.
     health = api("GET", "/cluster/health", token=token)
-    page.goto(f"{BASE_URL}/dashboard")
-    page.wait_for_selector("#appShell", state="visible", timeout=8_000)
+    navigate_to_dashboard(page)
     page.click("text=🖧 Cluster")
     page.wait_for_selector("#tabCluster", state="visible")
     page.locator("#tabCluster button:has-text('Refresh')").click()
@@ -388,7 +431,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "cluster_health_nodes_view")
 
     # ------------------------------------------------------------------
-    # Step 17 – Resource usage via Dev Tools API Explorer
+    # Step 23 – Resource usage via Dev Tools API Explorer
     # ------------------------------------------------------------------
     page.click("text=🛠️ Dev Tools")
     page.wait_for_selector("#tabDeveloper", state="visible")
@@ -400,7 +443,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "devtools_resource_usage_result")
 
     # ------------------------------------------------------------------
-    # Step 18 – /status via Dev Tools
+    # Step 24 – /status via Dev Tools
     # ------------------------------------------------------------------
     page.fill("#apiPath", "/status")
     page.locator("#tabDeveloper button:has-text('Send')").click()
@@ -408,7 +451,7 @@ def run_journey(page: Page) -> None:
     screenshot(page, "devtools_status_result")
 
     # ------------------------------------------------------------------
-    # Step 19 – Terminate the first OS session (via UI)
+    # Step 25 – Terminate the first OS session (via UI)
     # ------------------------------------------------------------------
     page.click("text=🚀 Sessions")
     page.wait_for_selector("#tabSessions", state="visible")
@@ -424,24 +467,23 @@ def run_journey(page: Page) -> None:
     screenshot(page, "sessions_after_terminate")
 
     # ------------------------------------------------------------------
-    # Step 20 – Swagger UI
+    # Step 27 – Swagger UI
     # ------------------------------------------------------------------
     page.goto(f"{BASE_URL}/docs", wait_until="networkidle")
     page.wait_for_timeout(3000)
     screenshot(page, "swagger_ui_docs")
 
     # ------------------------------------------------------------------
-    # Step 21 – ReDoc UI
+    # Step 28 – ReDoc UI
     # ------------------------------------------------------------------
     page.goto(f"{BASE_URL}/redoc", wait_until="networkidle")
     page.wait_for_timeout(3000)
     screenshot(page, "redoc_ui_docs")
 
     # ------------------------------------------------------------------
-    # Step 22 – Final dashboard overview (post journey)
+    # Step 29 – Final dashboard overview (post journey)
     # ------------------------------------------------------------------
-    page.goto(f"{BASE_URL}/dashboard")
-    page.wait_for_selector("#appShell", state="visible", timeout=8_000)
+    navigate_to_dashboard(page)
     page.click("text=📊 Overview")
     page.wait_for_timeout(800)
     screenshot(page, "dashboard_final_overview")
