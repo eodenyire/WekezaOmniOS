@@ -20,24 +20,6 @@ for _sub in (
     if _sub not in sys.path:
         sys.path.insert(0, _sub)
 
-# Lazy imports to keep startup fast
-def _load_windows_ui():
-    from windows_ui_init import WindowsUI  # noqa: F401 (see note below)
-    return WindowsUI
-
-def _get_ui_class(skin_name: str):
-    """Returns the UI class for the given skin name."""
-    if skin_name == "windows":
-        import importlib.util, os
-        # Use the __init__.py from the windows-ui directory
-        _windir = os.path.join(_SKINS_DIR, "windows-ui")
-        if _windir not in sys.path:
-            sys.path.insert(0, _windir)
-        # Import directly
-        from __init__ import WindowsUI  # noqa – handled below
-    pass  # handled in DesktopManager._skin_registry
-
-
 _SKIN_DIRS = {
     "windows": os.path.join(_SKINS_DIR, "windows-ui"),
     "ubuntu":  os.path.join(_SKINS_DIR, "ubuntu-ui"),

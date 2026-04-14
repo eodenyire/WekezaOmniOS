@@ -30,7 +30,7 @@ class KDETaskbar:
         pinned_str = "  |  ".join(self._pinned)
         bar = (
             f"[KDE Panel] ❯ Launcher ◀▶  {pinned_str}  "
-            "{'':>6} 🔊  🌐  🔋  🕐 12:00  🗓"
+            f"{'':>6} 🔊  🌐  🔋  🕐 12:00  🗓"
         )
         print(f"[KDETaskbar] {bar}")
         return bar

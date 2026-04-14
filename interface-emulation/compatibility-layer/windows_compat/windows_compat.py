@@ -101,7 +101,7 @@ class WindowsCompat:
                     f"[WindowsCompat] Registry: {win_key} → {result}"
                 )
                 return result
-        result = f"/etc/omnios/registry/unknown/{win_key.replace(chr(92), '/')}"
+        result = f"/etc/omnios/registry/unknown/{win_key.replace('\\', '/')}"
         print(f"[WindowsCompat] Registry (unmapped): {win_key} → {result}")
         return result
 
