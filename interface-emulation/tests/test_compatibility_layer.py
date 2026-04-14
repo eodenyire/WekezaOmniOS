@@ -150,7 +150,7 @@ class TestAndroidCompat:
         result = self.ac.translate_intent(
             "android.intent.action.VIEW", "https://example.com"
         )
-        assert "https://example.com" in result
+        assert result == "xdg-open https://example.com"
 
     def test_translate_intent_unknown(self):
         result = self.ac.translate_intent("com.custom.action", "")
