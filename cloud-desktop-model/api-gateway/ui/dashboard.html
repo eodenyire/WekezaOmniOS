@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WekezaOmniOS — Cloud Desktop</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0d1117; color: #c9d1d9; min-height: 100vh;
+    }
+    header {
+      background: #161b22; border-bottom: 1px solid #30363d;
+      padding: 14px 24px; display: flex; align-items: center; gap: 16px;
+    }
+    header h1 { font-size: 1.25rem; color: #58a6ff; }
+    header span { font-size: 0.85rem; color: #8b949e; margin-left: auto; }
+    nav {
+      background: #161b22; border-right: 1px solid #30363d;
+      width: 200px; min-height: calc(100vh - 53px); float: left; padding: 16px 0;
+    }
+    nav a {
+      display: block; padding: 10px 20px; color: #8b949e; text-decoration: none;
+      font-size: 0.9rem; transition: background 0.2s;
+    }
+    nav a:hover, nav a.active { background: #1f2937; color: #58a6ff; }
+    main { margin-left: 200px; padding: 28px; }
+    .panel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .panel h2 { font-size: 1rem; color: #58a6ff; margin-bottom: 14px; border-bottom: 1px solid #30363d; padding-bottom: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+    .card {
+      background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 16px;
+    }
+    .card .label { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; }
+    .card .value { font-size: 1.6rem; font-weight: 700; color: #e6edf3; margin-top: 4px; }
+    .card .sub { font-size: 0.8rem; color: #58a6ff; margin-top: 2px; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;
+    }
+    .badge.green { background: #1a3a2a; color: #3fb950; }
+    .badge.blue  { background: #1a2a3a; color: #58a6ff; }
+    .badge.yellow{ background: #3a3010; color: #d29922; }
+    .badge.red   { background: #3a1a1a; color: #f85149; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { text-align: left; padding: 8px 12px; color: #8b949e; font-weight: 500; border-bottom: 1px solid #30363d; }
+    td { padding: 9px 12px; border-bottom: 1px solid #21262d; }
+    tr:last-child td { border-bottom: none; }
+    .btn {
+      padding: 7px 16px; border: none; border-radius: 5px; cursor: pointer;
+      font-size: 0.85rem; font-weight: 600; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #238636; color: #fff; }
+    .btn-danger  { background: #da3633; color: #fff; }
+    .btn-info    { background: #1f6feb; color: #fff; }
+    .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+    .form-row label { font-size: 0.82rem; color: #8b949e; display: block; margin-bottom: 4px; }
+    .form-row input, .form-row select {
+      background: #0d1117; border: 1px solid #30363d; color: #c9d1d9;
+      border-radius: 5px; padding: 7px 10px; font-size: 0.88rem;
+    }
+    .msg { padding: 8px 12px; border-radius: 5px; margin-top: 10px; font-size: 0.85rem; display: none; }
+    .msg.ok  { background: #1a3a2a; color: #3fb950; display: block; }
+    .msg.err { background: #3a1a1a; color: #f85149; display: block; }
+    #loginPanel { max-width: 380px; margin: 80px auto; }
+    #loginPanel h2 { text-align: center; color: #58a6ff; margin-bottom: 20px; font-size: 1.4rem; }
+    #loginPanel input {
+      width: 100%; margin-bottom: 12px; background: #0d1117;
+      border: 1px solid #30363d; color: #c9d1d9; border-radius: 5px;
+      padding: 9px 12px; font-size: 0.95rem;
+    }
+    #loginPanel .btn { width: 100%; padding: 10px; font-size: 1rem; }
+    code { background: #1f2937; border-radius: 3px; padding: 1px 5px; font-size: 0.85rem; color: #a8d8f0; }
+  </style>
+</head>
+<body>
+
+<!-- ===================== LOGIN PANEL ===================== -->
+<div id="loginPanel" class="panel">
+  <h2>🖥️ WekezaOmniOS Cloud Desktop</h2>
+  <input id="loginUser" type="text" placeholder="Username" />
+  <input id="loginPass" type="password" placeholder="Password" />
+  <button class="btn btn-primary" onclick="doLogin()">Sign In</button>
+  <div style="text-align:center; margin-top:10px; font-size:0.82rem; color:#8b949e;">
+    No account? <a href="#" onclick="showRegister()" style="color:#58a6ff">Register</a>
+  </div>
+  <div id="regForm" style="display:none; margin-top:14px;">
+    <input id="regUser" type="text" placeholder="Choose username" style="width:100%;margin-bottom:8px;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;border-radius:5px;padding:9px 12px;font-size:.95rem;"/>
+    <input id="regPass" type="password" placeholder="Password (min 8 chars)" style="width:100%;margin-bottom:8px;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;border-radius:5px;padding:9px 12px;font-size:.95rem;"/>
+    <input id="regEmail" type="email" placeholder="Email (optional)" style="width:100%;margin-bottom:8px;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;border-radius:5px;padding:9px 12px;font-size:.95rem;"/>
+    <button class="btn btn-info" style="width:100%" onclick="doRegister()">Create Account</button>
+  </div>
+  <div id="loginMsg" class="msg"></div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div id="appShell" style="display:none">
+  <header>
+    <h1>🖥️ WekezaOmniOS Cloud Desktop</h1>
+    <span id="headerUser"></span>
+    <button class="btn btn-danger" style="padding:5px 12px;font-size:0.8rem" onclick="doLogout()">Logout</button>
+  </header>
+  <nav>
+    <a href="#" class="active" onclick="showTab('tabOverview',this)">📊 Overview</a>
+    <a href="#" onclick="showTab('tabSessions',this)">🚀 Sessions</a>
+    <a href="#" onclick="showTab('tabWorkspaces',this)">🗂️ Workspaces</a>
+    <a href="#" onclick="showTab('tabCluster',this)">🖧 Cluster</a>
+    <a href="#" onclick="showTab('tabDeveloper',this)">🛠️ Dev Tools</a>
+  </nav>
+  <main>
+
+    <!-- OVERVIEW -->
+    <div id="tabOverview">
+      <div class="panel">
+        <h2>Cluster Overview</h2>
+        <div class="grid" id="overviewCards"></div>
+      </div>
+      <div class="panel">
+        <h2>Node Health</h2>
+        <table><thead><tr><th>Node</th><th>Type</th><th>Status</th><th>Sessions</th><th>Checked</th></tr></thead>
+        <tbody id="healthTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- SESSIONS -->
+    <div id="tabSessions" style="display:none">
+      <div class="panel">
+        <h2>Launch OS Session</h2>
+        <div class="form-row">
+          <div><label>User ID</label><input id="sessUser" placeholder="alice" /></div>
+          <div>
+            <label>OS Profile</label>
+            <select id="sessOS">
+              <option value="ubuntu-22.04">Ubuntu 22.04</option>
+              <option value="debian-12">Debian 12</option>
+              <option value="fedora-39">Fedora 39</option>
+              <option value="arch-latest">Arch Linux</option>
+              <option value="windows-11">Windows 11</option>
+              <option value="windows-10">Windows 10</option>
+              <option value="windows-server-2022">Windows Server 2022</option>
+              <option value="android-14">Android 14</option>
+              <option value="android-13">Android 13</option>
+            </select>
+          </div>
+          <div><label>CPU Cores</label><input id="sessCPU" type="number" value="2" style="width:70px"/></div>
+          <div><label>RAM (GB)</label><input id="sessRAM" type="number" value="4" style="width:70px"/></div>
+          <div><button class="btn btn-primary" style="margin-top:20px" onclick="launchSession()">Launch</button></div>
+        </div>
+        <div id="sessMsg" class="msg"></div>
+      </div>
+      <div class="panel">
+        <h2>Active Sessions</h2>
+        <button class="btn btn-info" style="margin-bottom:12px" onclick="loadSessions()">Refresh</button>
+        <table><thead><tr><th>Session ID</th><th>User</th><th>OS</th><th>Node</th><th>Protocol</th><th>Connect</th><th>Action</th></tr></thead>
+        <tbody id="sessTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- WORKSPACES -->
+    <div id="tabWorkspaces" style="display:none">
+      <div class="panel">
+        <h2>Create Workspace</h2>
+        <div class="form-row">
+          <div><label>User ID</label><input id="wsUser" placeholder="alice" /></div>
+          <div><label>Name</label><input id="wsName" placeholder="my-dev-env" /></div>
+          <div>
+            <label>OS Profile</label>
+            <select id="wsOS">
+              <option value="ubuntu-22.04">Ubuntu 22.04</option>
+              <option value="debian-12">Debian 12</option>
+              <option value="windows-11">Windows 11</option>
+              <option value="android-14">Android 14</option>
+            </select>
+          </div>
+          <div><label>CPU</label><input id="wsCPU" type="number" value="2" style="width:70px"/></div>
+          <div><label>RAM</label><input id="wsRAM" type="number" value="4" style="width:70px"/></div>
+          <div><button class="btn btn-primary" style="margin-top:20px" onclick="createWorkspace()">Create</button></div>
+        </div>
+        <div id="wsMsg" class="msg"></div>
+      </div>
+      <div class="panel">
+        <h2>My Workspaces</h2>
+        <button class="btn btn-info" style="margin-bottom:12px" onclick="loadWorkspaces()">Refresh</button>
+        <table><thead><tr><th>ID</th><th>Name</th><th>OS</th><th>Status</th><th>Snapshots</th><th>Actions</th></tr></thead>
+        <tbody id="wsTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- CLUSTER -->
+    <div id="tabCluster" style="display:none">
+      <div class="panel">
+        <h2>Register Compute Node</h2>
+        <div class="form-row">
+          <div><label>Node ID</label><input id="nodeId" placeholder="linux-node-01" /></div>
+          <div>
+            <label>Type</label>
+            <select id="nodeType">
+              <option value="linux">Linux</option>
+              <option value="windows">Windows</option>
+              <option value="android-emulator">Android Emulator</option>
+            </select>
+          </div>
+          <div><label>Address</label><input id="nodeAddr" placeholder="10.0.0.5" /></div>
+          <div><label>CPU Cores</label><input id="nodeCPU" type="number" value="4" style="width:70px"/></div>
+          <div><label>RAM (GB)</label><input id="nodeRAM" type="number" value="8" style="width:70px"/></div>
+          <div><button class="btn btn-primary" style="margin-top:20px" onclick="registerNode()">Register</button></div>
+        </div>
+        <div id="nodeMsg" class="msg"></div>
+      </div>
+      <div class="panel">
+        <h2>Registered Nodes</h2>
+        <button class="btn btn-info" style="margin-bottom:12px" onclick="loadNodes()">Refresh</button>
+        <table><thead><tr><th>Node ID</th><th>Type</th><th>Address</th><th>CPU</th><th>RAM</th><th>Status</th><th>Sessions</th><th>Action</th></tr></thead>
+        <tbody id="nodeTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- DEVELOPER TOOLS -->
+    <div id="tabDeveloper" style="display:none">
+      <div class="panel">
+        <h2>API Explorer</h2>
+        <p style="font-size:0.88rem;color:#8b949e;margin-bottom:12px">
+          The full interactive API documentation is served at
+          <a href="/docs" target="_blank" style="color:#58a6ff">/docs</a> (Swagger) and
+          <a href="/redoc" target="_blank" style="color:#58a6ff">/redoc</a> (ReDoc).
+        </p>
+        <div class="form-row">
+          <div>
+            <label>Method</label>
+            <select id="apiMethod"><option>GET</option><option>POST</option><option>DELETE</option></select>
+          </div>
+          <div style="flex:1"><label>Endpoint</label><input id="apiPath" placeholder="/status" style="width:100%"/></div>
+          <div><button class="btn btn-info" style="margin-top:20px" onclick="runApiCall()">Send</button></div>
+        </div>
+        <div><label style="font-size:0.82rem;color:#8b949e">JSON Body (POST)</label>
+          <textarea id="apiBody" rows="4" style="width:100%;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;border-radius:5px;padding:8px;font-family:monospace;font-size:0.85rem;margin-top:4px"></textarea>
+        </div>
+        <pre id="apiResult" style="margin-top:12px;background:#0d1117;border:1px solid #30363d;border-radius:5px;padding:12px;font-size:0.82rem;overflow:auto;max-height:300px;color:#a8d8f0"></pre>
+      </div>
+      <div class="panel">
+        <h2>Quick Reference</h2>
+        <table>
+          <thead><tr><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>POST /auth/register</code></td><td>Create a new user account</td></tr>
+            <tr><td><code>POST /auth/login</code></td><td>Authenticate and get bearer token</td></tr>
+            <tr><td><code>POST /sessions/launch</code></td><td>Launch a cloud desktop OS session</td></tr>
+            <tr><td><code>GET  /sessions</code></td><td>List active sessions</td></tr>
+            <tr><td><code>DELETE /sessions/{id}</code></td><td>Terminate a session</td></tr>
+            <tr><td><code>POST /workspaces</code></td><td>Create a developer workspace</td></tr>
+            <tr><td><code>POST /workspaces/clone</code></td><td>Fork a workspace</td></tr>
+            <tr><td><code>POST /workspaces/snapshot</code></td><td>Snapshot a workspace</td></tr>
+            <tr><td><code>POST /cluster/nodes</code></td><td>Register a compute node</td></tr>
+            <tr><td><code>GET  /cluster/health</code></td><td>Cluster-wide health check</td></tr>
+            <tr><td><code>GET  /status</code></td><td>API gateway status</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const API = '';
+  let TOKEN = localStorage.getItem('cdm_token') || '';
+  let USER_ID = localStorage.getItem('cdm_uid') || '';
+  let USERNAME = localStorage.getItem('cdm_uname') || '';
+
+  function authHeaders() {
+    return TOKEN ? { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+  }
+
+  async function apiFetch(path, method='GET', body=null) {
+    const opts = { method, headers: authHeaders() };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(API + path, opts);
+    return r.json();
+  }
+
+  function msg(id, text, ok) {
+    const el = document.getElementById(id);
+    el.className = 'msg ' + (ok ? 'ok' : 'err');
+    el.textContent = text;
+  }
+
+  function showRegister() {
+    document.getElementById('regForm').style.display = 'block';
+  }
+
+  async function doRegister() {
+    const username = document.getElementById('regUser').value.trim();
+    const password = document.getElementById('regPass').value;
+    const email    = document.getElementById('regEmail').value.trim() || null;
+    const d = await apiFetch('/auth/register', 'POST', { username, password, email });
+    if (d.user_id) msg('loginMsg', 'Account created! You can now log in.', true);
+    else msg('loginMsg', d.detail || 'Registration failed', false);
+  }
+
+  async function doLogin() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value;
+    const d = await apiFetch('/auth/login', 'POST', { username, password });
+    if (d.access_token) {
+      TOKEN = d.access_token; USER_ID = d.user_id; USERNAME = d.username;
+      localStorage.setItem('cdm_token', TOKEN);
+      localStorage.setItem('cdm_uid', USER_ID);
+      localStorage.setItem('cdm_uname', USERNAME);
+      document.getElementById('loginPanel').style.display = 'none';
+      document.getElementById('appShell').style.display = 'block';
+      document.getElementById('headerUser').textContent = '👤 ' + USERNAME;
+      loadOverview();
+    } else {
+      msg('loginMsg', d.detail || 'Login failed', false);
+    }
+  }
+
+  async function doLogout() {
+    await apiFetch('/auth/logout', 'POST');
+    TOKEN = ''; USER_ID = ''; USERNAME = '';
+    localStorage.clear();
+    location.reload();
+  }
+
+  function showTab(tabId, link) {
+    document.querySelectorAll('main > div').forEach(d => d.style.display = 'none');
+    document.getElementById(tabId).style.display = 'block';
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    if (link) link.classList.add('active');
+  }
+
+  // ---- OVERVIEW ----
+  async function loadOverview() {
+    const s = await apiFetch('/status');
+    const u = s.resource_usage || {};
+    document.getElementById('overviewCards').innerHTML = `
+      <div class="card"><div class="label">API Status</div><div class="value" style="font-size:1.1rem"><span class="badge green">● Online</span></div></div>
+      <div class="card"><div class="label">Active Sessions</div><div class="value">${u.active_sessions||0}</div></div>
+      <div class="card"><div class="label">Total Nodes</div><div class="value">${s.total_nodes||0}</div></div>
+      <div class="card"><div class="label">CPU Used</div><div class="value">${u.used_cpu_cores||0}<span style="font-size:1rem;color:#8b949e"> / ${u.total_cpu_cores||0}</span></div><div class="sub">cores</div></div>
+      <div class="card"><div class="label">RAM Used</div><div class="value">${u.used_ram_gb||0}<span style="font-size:1rem;color:#8b949e"> / ${u.total_ram_gb||0}</span></div><div class="sub">GB</div></div>
+    `;
+    const h = await apiFetch('/cluster/health');
+    document.getElementById('healthTable').innerHTML = (h.nodes||[]).map(n => `
+      <tr>
+        <td><code>${n.node_id}</code></td>
+        <td>${n.node_type}</td>
+        <td><span class="badge ${n.reachable?'green':'red'}">${n.status}</span></td>
+        <td>${n.active_sessions}</td>
+        <td style="font-size:0.78rem;color:#8b949e">${(n.checked_at||'').substring(0,19)}</td>
+      </tr>`).join('') || '<tr><td colspan="5" style="color:#8b949e;text-align:center">No nodes registered</td></tr>';
+  }
+
+  // ---- SESSIONS ----
+  async function launchSession() {
+    const d = await apiFetch('/sessions/launch', 'POST', {
+      user_id: document.getElementById('sessUser').value || USER_ID,
+      os_profile: document.getElementById('sessOS').value,
+      cpu_cores: +document.getElementById('sessCPU').value,
+      ram_gb: +document.getElementById('sessRAM').value,
+    });
+    if (d.session_id) { msg('sessMsg', 'Session launched: ' + d.session_id, true); loadSessions(); }
+    else msg('sessMsg', d.detail || 'Launch failed', false);
+  }
+
+  async function loadSessions() {
+    const d = await apiFetch('/sessions');
+    document.getElementById('sessTable').innerHTML = (d.sessions||[]).map(s => `
+      <tr>
+        <td><code>${s.session_id}</code></td>
+        <td>${s.user_id}</td>
+        <td>${s.os_profile}</td>
+        <td>${s.node_id}</td>
+        <td>${s.display_protocol||s.node_type}</td>
+        <td><a href="${s.connect_url}" target="_blank" style="color:#58a6ff;font-size:0.8rem">Connect</a></td>
+        <td><button class="btn btn-danger" style="padding:4px 10px;font-size:0.78rem" onclick="terminateSession('${s.session_id}')">Stop</button></td>
+      </tr>`).join('') || '<tr><td colspan="7" style="color:#8b949e;text-align:center">No active sessions</td></tr>';
+  }
+
+  async function terminateSession(id) {
+    await apiFetch('/sessions/'+id, 'DELETE');
+    loadSessions();
+  }
+
+  // ---- WORKSPACES ----
+  async function createWorkspace() {
+    const d = await apiFetch('/workspaces', 'POST', {
+      user_id: document.getElementById('wsUser').value || USER_ID,
+      name: document.getElementById('wsName').value,
+      os_profile: document.getElementById('wsOS').value,
+      cpu_cores: +document.getElementById('wsCPU').value,
+      ram_gb: +document.getElementById('wsRAM').value,
+    });
+    if (d.workspace_id) { msg('wsMsg', 'Workspace created: ' + d.workspace_id, true); loadWorkspaces(); }
+    else msg('wsMsg', d.detail || 'Failed', false);
+  }
+
+  async function loadWorkspaces() {
+    const d = await apiFetch('/workspaces');
+    document.getElementById('wsTable').innerHTML = (d.workspaces||[]).map(w => `
+      <tr>
+        <td><code style="font-size:0.78rem">${w.workspace_id}</code></td>
+        <td>${w.name}</td>
+        <td>${w.os_profile}</td>
+        <td><span class="badge ${w.status==='running'?'green':w.status==='stopped'?'yellow':'blue'}">${w.status}</span></td>
+        <td>${(w.snapshots||[]).length}</td>
+        <td style="display:flex;gap:4px">
+          <button class="btn btn-info" style="padding:3px 8px;font-size:0.76rem" onclick="snapshotWs('${w.workspace_id}')">Snap</button>
+          <button class="btn btn-danger" style="padding:3px 8px;font-size:0.76rem" onclick="deleteWs('${w.workspace_id}')">Del</button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="6" style="color:#8b949e;text-align:center">No workspaces</td></tr>';
+  }
+
+  async function snapshotWs(id) {
+    const d = await apiFetch('/workspaces/snapshot', 'POST', { workspace_id: id });
+    alert(d.status === 'ok' ? 'Snapshot: ' + d.snapshot_name : (d.detail || 'Failed'));
+    loadWorkspaces();
+  }
+
+  async function deleteWs(id) {
+    if (!confirm('Delete workspace ' + id + '?')) return;
+    await apiFetch('/workspaces/'+id, 'DELETE');
+    loadWorkspaces();
+  }
+
+  // ---- CLUSTER ----
+  async function registerNode() {
+    const d = await apiFetch('/cluster/nodes', 'POST', {
+      node_id: document.getElementById('nodeId').value,
+      node_type: document.getElementById('nodeType').value,
+      address: document.getElementById('nodeAddr').value,
+      cpu_cores: +document.getElementById('nodeCPU').value,
+      ram_gb: +document.getElementById('nodeRAM').value,
+    });
+    if (d.node_id) { msg('nodeMsg', 'Node registered: ' + d.node_id, true); loadNodes(); }
+    else msg('nodeMsg', d.detail || 'Failed', false);
+  }
+
+  async function loadNodes() {
+    const d = await apiFetch('/cluster/nodes');
+    document.getElementById('nodeTable').innerHTML = (d.nodes||[]).map(n => `
+      <tr>
+        <td><code>${n.node_id}</code></td>
+        <td>${n.node_type}</td>
+        <td>${n.address}</td>
+        <td>${n.cpu_cores}</td>
+        <td>${n.ram_gb} GB</td>
+        <td><span class="badge ${n.status==='active'?'green':n.status==='idle'?'blue':'yellow'}">${n.status}</span></td>
+        <td>${n.active_sessions}</td>
+        <td><button class="btn btn-danger" style="padding:3px 8px;font-size:0.76rem" onclick="removeNode('${n.node_id}')">Remove</button></td>
+      </tr>`).join('') || '<tr><td colspan="8" style="color:#8b949e;text-align:center">No nodes registered</td></tr>';
+  }
+
+  async function removeNode(id) {
+    if (!confirm('Remove node ' + id + '?')) return;
+    await apiFetch('/cluster/nodes/'+id, 'DELETE');
+    loadNodes();
+  }
+
+  // ---- API EXPLORER ----
+  async function runApiCall() {
+    const method = document.getElementById('apiMethod').value;
+    const path   = document.getElementById('apiPath').value;
+    let body = null;
+    try { body = method !== 'GET' ? JSON.parse(document.getElementById('apiBody').value || '{}') : null; }
+    catch(e) { document.getElementById('apiResult').textContent = 'Invalid JSON body'; return; }
+    const d = await apiFetch(path, method, body);
+    document.getElementById('apiResult').textContent = JSON.stringify(d, null, 2);
+  }
+
+  // Auto-login if token exists
+  if (TOKEN) {
+    document.getElementById('loginPanel').style.display = 'none';
+    document.getElementById('appShell').style.display = 'block';
+    document.getElementById('headerUser').textContent = '👤 ' + (USERNAME || 'user');
+    loadOverview();
+  }
+</script>
+</body>
+</html>

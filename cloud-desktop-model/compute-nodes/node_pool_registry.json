@@ -1,0 +1,42 @@
+[
+  {
+    "node_id": "linux-01",
+    "node_type": "linux",
+    "address": "10.0.0.1",
+    "status": "idle",
+    "cpu_cores": 8,
+    "ram_gb": 16,
+    "active_sessions": 0,
+    "created_at": "2026-04-14T07:55:33.509989Z"
+  },
+  {
+    "node_id": "win-01",
+    "node_type": "windows",
+    "address": "10.0.0.2",
+    "status": "idle",
+    "cpu_cores": 8,
+    "ram_gb": 16,
+    "active_sessions": 0,
+    "created_at": "2026-04-14T07:55:33.510003Z"
+  },
+  {
+    "node_id": "android-01",
+    "node_type": "android-emulator",
+    "address": "10.0.0.3",
+    "status": "idle",
+    "cpu_cores": 4,
+    "ram_gb": 8,
+    "active_sessions": 0,
+    "created_at": "2026-04-14T07:55:33.510008Z"
+  },
+  {
+    "node_id": "test-linux",
+    "node_type": "linux",
+    "address": "127.0.0.1",
+    "status": "idle",
+    "cpu_cores": 4,
+    "ram_gb": 8,
+    "active_sessions": 0,
+    "created_at": "2026-04-14T07:55:33.522576Z"
+  }
+]
