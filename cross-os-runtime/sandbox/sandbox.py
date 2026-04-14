@@ -26,7 +26,7 @@ DEFAULT_ALLOWED_SYSCALLS = frozenset({
     "exit", "exit_group", "futex", "clock_gettime", "nanosleep",
     "socket", "connect", "sendmsg", "recvmsg", "bind", "listen",
     "accept", "epoll_wait", "epoll_ctl", "epoll_create1",
-    "read", "write", "ioctl", "fcntl", "dup", "dup2", "pipe",
+    "ioctl", "fcntl", "dup", "dup2", "pipe",
     "select", "poll", "sendfile", "clone", "execve", "wait4",
     "getpid", "getppid", "getuid", "getgid", "geteuid", "getegid",
 })
